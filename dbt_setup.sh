@@ -5,4 +5,4 @@ dbt init databricks
 cp -R cli/ databricks/ 
 cp -R macros/ databricks/
 cp packages.yml databricks/
-dbt deps
+cp countries.csv databricks/seeds/
