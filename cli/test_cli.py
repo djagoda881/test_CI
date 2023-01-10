@@ -7,6 +7,7 @@ import pdb
 import os
 import shutil
 
+from sqlalchemy import create_engine
 from faker import Faker
 from datetime import datetime
 from pydantic import BaseModel, Field
@@ -25,7 +26,7 @@ from integra.seed import (
 
 fake = Faker()
 
-TEST_SOURCE = "raw_t"
+TEST_SOURCE = "public"
 TEST_TABLE = "test_table"
 MART = "unit_test"
 PROJECT = "unit_test"
@@ -85,9 +86,15 @@ def create_sqllite_source():
         accounts.append(Account(Id=i).dict(by_alias=True))
     accounts_df_pandas = pd.DataFrame(accounts)
 
-    conn = sqlite3.connect("test_database")
-    contacts_df_pandas.to_sql("contacts", conn, if_exists="replace", index=False)
-    accounts_df_pandas.to_sql("accounts", conn, if_exists="replace", index=False)
+    engine = create_engine("postgresql://user:password@localhost:5432/db")
+
+    accounts_df_pandas.to_sql(
+        "test_table_accounts", engine, if_exists="append", index=False
+    )
+
+    contacts_df_pandas.to_sql(
+        "test_table_contacts", engine, if_exists="append", index=False
+    )
 
 
 # --------------------------- START INTEGRA COMMON COMMAND TESTING --------------------------- #
