@@ -24,13 +24,16 @@ def bootstrap(
     """
     Bootstrap a new project.
 
+    Args:
+        model_name (str): The name of the model.
+        mart (str): The data mart in which the models will be located.
+        project_name (str): The name of the project inside the mart.
+
     Generates the following files:\n
         - models/marts/<MART>/<PROJECT_NAME>/<MODEL_NAME>/<MODEL_NAME>.sql (empty file)
 
-    Where `BASE_MODELS_SCHEMA` is the schema holding base models, as defined in `common.py`.
-
     The empty model SQL then needs to be developed by user. Once it's ready, user
-    can then call `model generate-yaml <MODEL_NAME>` to bootstrap relevant YML file(s).
+    can then call `dbt run` to materialize the model then later `model bootstrap-yaml <MODEL_NAME> <MART> <PROJECT_NAME>` to bootstrap relevant YML file(s).
 
     Example:
         integra model bootstrap c4c_example sales cloud_for_customer
@@ -86,6 +89,20 @@ def bootstrap_yaml(
 ):
     """
     Bootstrap the YAML file for a particular model. The model must already be materialized.
+
+    Args:
+        model_name (str): The name of the model.
+        mart (str): The data mart in which the models will be located.
+        project_name (str): The name of the project inside the mart.
+        technical_owner (str, Optional): The technical owner of the table.
+        business_owner (str, Optional): The business owner of the table.
+        target (str, Optional): The environment to use. This should only be altered in production.
+
+    The model can be materialized by using a command `dbt run -m <MODEL_NAME>`
+
+    Example:
+        integra model bootstrap-yaml c4c_example sales cloud_for_customer
+
     """
 
     PROJECT_DIR = MODELS_DIR.joinpath("marts", mart, project_name)

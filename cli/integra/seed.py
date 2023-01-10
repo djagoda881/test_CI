@@ -69,8 +69,10 @@ def _excel_to_csv(
 
 
 def get_all_seeds(target: str = "qa") -> List[str]:
-    """Runs 'dbt --resource-type seed' to retrieve all seed in project
-    Returns the all the seed names in your project"""
+    """
+    Runs 'dbt --resource-type seed' to retrieve all seed in project.
+    Returns the all the seed names in your project
+    """
 
     seed_paths = (
         call_shell(f"""dbt ls --resource-type seed --target {target}""")
@@ -87,6 +89,7 @@ def get_all_seeds(target: str = "qa") -> List[str]:
 
 
 def check_seed_exists(seed_name: str) -> bool:
+
     all_seeds = get_all_seeds()
     return seed_name in all_seeds
 
@@ -94,8 +97,16 @@ def check_seed_exists(seed_name: str) -> bool:
 def check_seed_in_yaml(
     seed_name: str, yaml_path: str = DEFAULT_SEED_SCHEMA_PATH
 ) -> bool:
-    """Checks if a seed name is inside the schema YAML file
-    If the seed name provided to the function is in schema YAML file it returns True, otherwise it returns False"""
+    """
+    Checks if a seed name is inside the schema YAML file.
+
+    Args:
+        seed_name (str) The name of the seed.
+        yaml_path (str, Optional) The path to the file with seed YAML schema.  Defaults to `DEFAULT_SEED_SCHEMA_PATH` variable.
+
+    Returns:
+        If the seed name provided to the function is in schema YAML file it returns True, otherwise it returns False
+    """
     if not yaml_path.is_file():
         return False
 
@@ -122,17 +133,21 @@ def get_seeds_to_register(yaml_path) -> List[str]:
 
 def create_yaml(
     seeds: List[str],
-    technical_owner,
-    business_owner,
+    technical_owner: str,
+    business_owner: str,
     new: str = False,
     target: str = "qa",
 ) -> bool:
-    """Returns text of YAML file with selected seeds information in it.
+
+    """
+    Returns text of YAML file with selected seeds information in it.
 
     Args:
-        seeds (List[str]): The name of the seed
-        new (bool): Whether to include headers that are needed when creating a new yaml.
-        target (str): The target to work with, options are ('qa', 'prod') default is qa.
+        seeds (List[str]): The name of the seed.
+        technical_owner (str, Optional): The technical owner of the table.
+        business_owner (str, Optional): The business owner of the table.
+        new (bool, Optional): Whether to include headers that are needed when creating a new yaml. Defaults to False.
+        target (str, Optional): The target to work with, options are ('qa', 'prod'). Defaults to qa.
 
     Returns:
         yaml_text (str): String with yaml formatting containing seeds information
@@ -175,15 +190,16 @@ def register(
         help="the target to work with, options are ('qa', 'prod') default is qa",
     ),
 ) -> bool:
-    """Registers seeds in dbt and seeds information in schema YAML file under yaml_path
+    """
+    Registers seeds in dbt and seeds information in schema YAML file under yaml_path
 
     Args:
         seed (str, Optional): The name of the seed to register, if not specified all seeds will be registered.
         technical_owner (str): The technical owner of the table.
         business_owner (str): The business owner of the table.
         overwrite (bool, Optional): Whether to overwrite schema YAML file with seed information if seed is already present in schema YAML file.
-        yaml_path (str, Optional): The absolute path of the YAML file to append seed information, default path is DBT_PROJECT_DIR/seeds/aster_data/schema.yml.
-        target (str, Optional): The target to work with, options are ('qa', 'prod') default is qa.
+        yaml_path (str, Optional): The absolute path of the YAML file to append seed information. Default path is DBT_PROJECT_DIR/seeds/aster_data/schema.yml.
+        target (str, Optional): The target to work with, options are ('qa', 'prod'). Defaults to qa.
     """
 
     # if yaml_path is a string (user input), convert it to a Path object
