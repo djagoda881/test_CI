@@ -159,7 +159,7 @@ def add(
             f"\nPlease type the [white]business owner[/white] for the source table [blue]{fqn_fmt}[/blue] and then press [green]ENTER[/green].\n"
         )
 
-    generate_source_text_command = f"""dbt -q run-operation generate_source --args '{{"schema_name": "{source}", "table_names": ["{fqn_fmt}",], "technical_owner": "{technical_owner}", "business_owner": "{business_owner}"}}'"""
+    generate_source_text_command = f"""dbt -q run-operation generate_source --args '{{"schema_name": "{source}", "table_names": ["{table_name}",], "technical_owner": "{technical_owner}", "business_owner": "{business_owner}"}}'"""
     source_text = call_shell(generate_source_text_command)
 
     with open(source_path, "w") as file:
