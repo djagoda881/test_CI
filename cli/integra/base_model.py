@@ -64,7 +64,7 @@ def create(
     # Generate SQL
     print(f"{operation.title()} base model {fqn_fmt} from {source_fqn_fmt}...")
     base_model_content = call_shell(
-        f"""dbt -q run-operation generate_base_model --args '{{"source_name": "{source}", "table_name": "{table_name}"}}'"""
+        f"""dbt -q run-operation generate_base_model --args '{{"source_name": "{source}", "table_name": "{table_name}","project": "postgres"}}'"""
     )
     with open(sql_path, "w") as file:
         file.write(base_model_content)
