@@ -37,7 +37,10 @@ def check_if_source_table_exists(source: str, table_name: str) -> bool:
                 sd for sd in source_definitions if sd["name"] == source
             ][0]
             source_tables = source_definition["tables"]
-            return any([table["name"] == table_name for table in source_tables])
+            if not source_tables:
+                return False
+            else:
+                return any([table["name"] == table_name for table in source_tables])
     return False
 
 

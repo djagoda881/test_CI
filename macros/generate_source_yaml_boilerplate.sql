@@ -88,16 +88,16 @@
     {% do sources_yaml.append('        tags: []' ) %}
 
 
-    {% do sources_yaml.append('    meta:' ) %}
+    {% do sources_yaml.append('        meta:' ) %}
     {% if technical_owner %}
-        {% do sources_yaml.append('      technical_owner: ' ~ technical_owner)%}
+        {% do sources_yaml.append('          technical_owner: ' ~ technical_owner)%}
     {% else %}
-        {% do sources_yaml.append('      technical_owner: @Unassigned')%}
+        {% do sources_yaml.append('          technical_owner: @Unassigned')%}
     {% endif %}
     {% if business_owner %}
-        {% do sources_yaml.append('      business_owner: ' ~ business_owner)%}
+        {% do sources_yaml.append('          business_owner: ' ~ business_owner)%}
     {% else %}
-        {% do sources_yaml.append('      business_owner: @Unassigned')%}        
+        {% do sources_yaml.append('          business_owner: @Unassigned')%}        
     {% endif %}
 
 
