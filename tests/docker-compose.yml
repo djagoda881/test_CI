@@ -1,7 +1,39 @@
 version: "3"
+
+networks:
+  dp_test:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  integra_db:
+
+
 services:
+  data_platform_test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: data_platform
+    container_name: data_platform_test
+    volumes:
+      - ${HOME}/dyvenia/integra/tests/postgres:/home/viadot/postgres
+      - ${HOME}/.dbt/profiles.yml:/home/viadot/.dbt/profiles.yml
+      - ${HOME}/.prefect/profiles.toml:/home/viadot/.prefect/profiles.toml
+    shm_size: '4gb'
+    command: "sleep infinity"
+    environment:
+      SHELL: "/bin/bash"
+    restart: "unless-stopped"
+    networks:
+      dp_test:
+        ipv4_address: 172.28.1.2
+
   postgres:
     image: postgres:latest
+    container_name: postgres
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: db
@@ -10,6 +42,6 @@ services:
       - integra_db:/var/lib/postgresql/data
     ports:
       - 5432:5432
-
-volumes:
-  integra_db:
+    networks:
+      dp_test:
+        ipv4_address: 172.28.1.3
