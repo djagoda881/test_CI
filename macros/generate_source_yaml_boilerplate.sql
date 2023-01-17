@@ -23,8 +23,8 @@
     business_owner=none,
     database_name=target.database,
     generate_columns=True,
-    include_descriptions=True,
-    include_table_profiling=True,
+    include_descriptions=False,
+    include_table_profiling=False,
     include_sla=True,
     include_freshness=True,
     loaded_at_field="_viadot_downloaded_at_utc::timestamp",
@@ -32,7 +32,7 @@
         "warn_after": "{count: 24, period: hour}",
         "error_after": "{count: 48, period: hour}"
         },
-    table_pattern='*',
+    table_pattern='%',
     exclude='',
     name=schema_name,
     table_names=None
@@ -60,6 +60,7 @@
     {% set tables=codegen.get_tables_in_schema(schema_name, database_name, table_pattern, exclude) %}
 {% else %}
     {% set tables = table_names %}
+
 {% endif %}
 
 {% if table_names %}
@@ -68,7 +69,6 @@
 
 {% for table in tables %}
     {% do sources_yaml.append('      - name: ' ~ table | lower ) %}
-    
     {% if include_descriptions %}
         {% do sources_yaml.append('        description: |') %}
     {% endif %}
@@ -92,12 +92,12 @@
     {% if technical_owner %}
         {% do sources_yaml.append('          technical_owner: ' ~ technical_owner)%}
     {% else %}
-        {% do sources_yaml.append('          technical_owner: @Unassigned')%}
+        {% do sources_yaml.append('          technical_owner: Unassigned')%}
     {% endif %}
     {% if business_owner %}
         {% do sources_yaml.append('          business_owner: ' ~ business_owner)%}
     {% else %}
-        {% do sources_yaml.append('          business_owner: @Unassigned')%}        
+        {% do sources_yaml.append('          business_owner: Unassigned')%}        
     {% endif %}
 
 
