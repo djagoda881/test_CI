@@ -16,31 +16,31 @@ def call_shell(command):
 
 def find_dbt_project():
     """
-    Finds dbt projects available in current, parent, and child directories
+    Finds dbt projects available in current, parent, and child directories.
 
     returns:
-        dbt_proyect_path (str): Absolute path to (the only available or selected) dbt_proyect
+        dbt_proyect_path (str): Absolute path to a dbt proyect.
     """
     # Recursive search for "dbt_project.yml" under current directory and parent directories
     cwd: str = os.getcwd()
     while cwd != os.path.dirname(cwd):
-        dbt_project_in_cwd: bool = "dbt_project.yml" in os.listdir(cwd)
-        if dbt_project_in_cwd:
+        is_dbt_project_under_cwd: bool = "dbt_project.yml" in os.listdir(cwd)
+        if is_dbt_project_under_cwd:
             dbt_project_path = cwd
             return dbt_project_path
         cwd: str = os.path.dirname(cwd)
 
-    # Recursive search for "dbt/lakehouse/dbt_project.yml" structure under current directory and parent directories
+    # Recursive search for "dbt/*/dbt_project.yml" structure under current directory and parent directories
     cwd: str = os.getcwd()
     while cwd != os.path.dirname(cwd):
         dbt_projects_under_cwd: list = [
-            path for path in Path(cwd).rglob("dbt/lakehouse/dbt_project.yml")
+            path for path in Path(cwd).rglob("dbt/*/dbt_project.yml")
         ]
         if dbt_projects_under_cwd:
             break
         cwd: str = os.path.dirname(cwd)
 
-    # If more than one "dbt/lakehouse/dbt_project.yml" choose between available projects
+    # If more than one "dbt/*/dbt_project.yml" choose between available projects
     if dbt_projects_under_cwd:
         if len(dbt_projects_under_cwd) > 1:
             for i, path in enumerate(dbt_projects_under_cwd):
@@ -60,13 +60,13 @@ def find_dbt_project():
 
     else:
         print("No dbt projects available.")
-        dbt_project_path: bool = False
+        dbt_project_path: None = None
         return dbt_project_path
 
 
 def run_in_dbt_project(func: callable) -> callable:
     """
-    Decorates functions to change directory to a dbt project before running underlying function
+    Decorates functions to change directory to a dbt project before running underlying function.
     """
     dbt_project_path: str = find_dbt_project()
 
