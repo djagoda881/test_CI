@@ -60,7 +60,7 @@ def find_dbt_project():
 
     else:
         print("No dbt projects available.")
-        dbt_project_path: None = None
+        dbt_project_path: str = None
         return dbt_project_path
 
 
