@@ -228,7 +228,7 @@ def validate_file(
     return True
 
 
-def get_yaml_paths_under_directory(directory_path: str) -> bool:
+def get_yaml_paths_under_directory(directory_path: str) -> List[str]:
     """
     Gets paths of yaml files under 'directory_path' argument, and return path of yamls inside.
 
