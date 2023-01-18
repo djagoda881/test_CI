@@ -3,37 +3,9 @@ import functools
 import subprocess
 from pathlib import Path
 from rich import print
-
-DBT_PROJECT_DIR = Path(__file__).resolve().parent.parent.parent
-BASE_MODELS_SCHEMA = "conformed"
-
-
-def call_shell(command):
-    return subprocess.check_output(command, shell=True).decode("utf-8")
-
-
-def run_in_dbt_project(func):
-    original_directory = os.getcwd()
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        os.chdir(DBT_PROJECT_DIR)
-        value = func(*args, **kwargs)
-        return value
-
-    os.chdir(original_directory)
-    return wrapper
-
-
-import os
-import functools
-import subprocess
-from pathlib import Path
-from rich import print
 import typing
 
 
-DBT_PROJECT_DIR = Path(__file__).resolve().parent.parent.parent
 BASE_MODELS_SCHEMA = "conformed"
 
 
@@ -77,6 +49,9 @@ def find_dbt_project():
                 input("Type number of desired dbt project and press enter: ")
             )
 
+            # default 1 if no input
+            dbt_project_selected = dbt_project_selected or 1
+
             dbt_project_path: str = dbt_projects_under_cwd[
                 dbt_project_selected - 1
             ].parent
@@ -92,11 +67,14 @@ def find_dbt_project():
         return dbt_project_path
 
 
-def run_in_dbt_project(func: callable) -> callable:
+DBT_PROJECT_DIR = find_dbt_project()
+
+
+def run_in_dbt_project(func: callable, dbt_project_dir=DBT_PROJECT_DIR) -> callable:
     """
     Decorates functions to change directory to a dbt project before running underlying function.
     """
-    dbt_project_path: str = find_dbt_project()
+    dbt_project_path: str = dbt_project_dir
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
