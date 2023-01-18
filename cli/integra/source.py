@@ -165,7 +165,7 @@ def add(
     generate_source_text_command = f"""dbt -q run-operation generate_source --args '{{"schema_name": "{source}", "table_names": ["{table_name}",], "technical_owner": "{technical_owner}", "business_owner": "{business_owner}"}}'"""
     source_text = call_shell(generate_source_text_command)
 
-    with open(source_path, "w") as file:
+    with open(source_path, "a") as file:
         file.write(source_text)
 
     print(f"Source table {fqn_fmt} has been added successfully.")
