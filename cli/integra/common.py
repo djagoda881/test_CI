@@ -20,7 +20,7 @@ def find_dbt_project():
     Finds dbt projects available in current, parent, and child directories.
 
     returns:
-        dbt_proyect_path (str): Absolute path to a dbt proyect.
+        dbt_project_path (str): Absolute path to a dbt project.
     """
     # Recursive search for "dbt_project.yml" under current directory and parent directories
     cwd: str = os.getcwd()
