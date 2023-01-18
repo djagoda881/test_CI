@@ -3,10 +3,20 @@ from pathlib import Path
 from typing import List
 import yaml
 import os
+import sys
+
+# solution to import files across the repo until we make this repo a python package
+current_directory = os.path.dirname(__file__)
+parent_directory = os.path.dirname(current_directory)
+integra_module = os.path.join(parent_directory, "cli", "integra")
+sys.path.insert(1, integra_module)
+
+
+from common import find_dbt_project
 
 logger = logging.getLogger(__name__)
 
-PROJECT_DIR = Path(__file__).resolve().parent.joinpath("dbt", "lakehouse")
+PROJECT_DIR = find_dbt_project()
 
 VALID_SCHEMA_VERSION: int = 2
 
