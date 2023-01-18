@@ -5,6 +5,7 @@ from pathlib import Path
 from rich import print
 import typing
 
+
 DBT_PROJECT_DIR = Path(__file__).resolve().parent.parent.parent
 BASE_MODELS_SCHEMA = "conformed"
 
