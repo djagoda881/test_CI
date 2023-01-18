@@ -13,9 +13,9 @@ USER root
 RUN apt update
 RUN apt upgrade -y
 RUN apt install -y python3-pip
-RUN echo 'alias ll="ls -alF"' >> ~/.bashrc
 RUN chmod a+x setup.sh
 USER viadot
+RUN echo 'alias ll="ls -alF"' >> ~/.bashrc
 RUN pip install -r requirements.txt
 
 
