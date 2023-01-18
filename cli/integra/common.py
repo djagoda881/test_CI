@@ -34,7 +34,7 @@ def find_dbt_project():
     # Recursive search for "dbt/*/dbt_project.yml" structure under current directory and parent directories
     cwd: str = os.getcwd()
     while cwd != os.path.dirname(cwd):
-        dbt_projects_under_cwd: list = [
+        dbt_projects_under_cwd = [
             path for path in Path(cwd).rglob("dbt/*/dbt_project.yml")
         ]
         if dbt_projects_under_cwd:
