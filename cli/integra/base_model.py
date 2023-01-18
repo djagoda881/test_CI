@@ -13,10 +13,10 @@ app = typer.Typer()
 
 def check_if_base_model_exists(source: str, table_name: str) -> bool:
     sql_path = DBT_PROJECT_DIR.joinpath(
-        "models", BASE_MODELS_SCHEMA, source, table_name + ".sql"
+        "models", BASE_MODELS_SCHEMA, table_name, table_name + ".sql"
     )
     yml_path = DBT_PROJECT_DIR.joinpath(
-        "models", BASE_MODELS_SCHEMA, source, table_name + ".yml"
+        "models", BASE_MODELS_SCHEMA, table_name, table_name + ".yml"
     )
 
     both_files_exist = sql_path.exists() and yml_path.exists()
@@ -34,6 +34,8 @@ def check_if_base_model_exists(source: str, table_name: str) -> bool:
 def create(
     source: str,
     table_name: str,
+    project: str = "postgres",
+    case_sensitive_cols: bool = True,
     force: bool = typer.Option(False, "--force", "-f"),
 ):
     base_dir = DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA, table_name)
@@ -64,7 +66,7 @@ def create(
     # Generate SQL
     print(f"{operation.title()} base model {fqn_fmt} from {source_fqn_fmt}...")
     base_model_content = call_shell(
-        f"""dbt -q run-operation generate_base_model --args '{{"source_name": "{source}", "table_name": "{table_name}","project": "postgres"}}'"""
+        f"""dbt -q run-operation generate_base_model --args '{{"source_name": "{source}", "table_name": "{table_name}","project": "{project}", "case_sensitive_cols" : {case_sensitive_cols}}}'"""
     )
     with open(sql_path, "w") as file:
         file.write(base_model_content)

@@ -91,8 +91,13 @@ def add(
         None, "--business-owner", help="The business owner of the table."
     ),
     no_profile: bool = typer.Option(False, "--no-profile", "-np"),
+    project: str = typer.Option("postgres", "--project", help="Name of dbt_project."),
+    case_sensitive_cols: bool = typer.Option(
+        True, "--case_sensitive_cols", help="Whether the database is case-sensitive."
+    ),
 ) -> bool:
-    """Add a new table to a source schema and materializes it as a base model
+    """
+    Add a new table to a source schema and materializes it as a base model.
 
     Args:
         source (str): The name of the source schema.
@@ -102,6 +107,8 @@ def add(
         no_profile (bool, optional): Whether to perform table profiling.
         The generated profile will be added to each table's documentation.
         Defaults to False.
+        project (str, optional): The name of dbt project
+        case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
 
     Raises:
         SourceTableExistsError: If the table already exists in the source YAML.
@@ -183,7 +190,7 @@ def add(
     base_model = table_name
     base_model_fqn = f"{BASE_MODELS_SCHEMA}.{base_model}"
 
-    create_base_model(source, base_model)
+    create_base_model(source, base_model, project, case_sensitive_cols)
     call_shell(f"dbt -q run --select {base_model}")
 
     print(f"Base model {base_model_fqn} has been materialized successfully.")
