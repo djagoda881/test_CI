@@ -38,6 +38,17 @@ def create(
     case_sensitive_cols: bool = True,
     force: bool = typer.Option(False, "--force", "-f"),
 ):
+    """
+    Creates base_model.sql and base_model.yml for the specified table from source.
+
+    Args:
+        source (str): The name of the source schema.
+        table_name (str): The name of the table to add.
+        project (str, optional): The name of dbt project. Defaults to 'postgres'.
+        case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
+        force (bool, optional): Specifies whether the model is to be overwritten. Defaults to False.
+
+    """
     base_dir = DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA, table_name)
     yml_path = base_dir.joinpath(table_name + ".yml")
     sql_path = base_dir.joinpath(table_name + ".sql")

@@ -32,7 +32,7 @@
         "warn_after": "{count: 24, period: hour}",
         "error_after": "{count: 48, period: hour}"
         },
-    table_pattern='%',
+    table_pattern='%', -- The default table_pattern is adapted to the postgres database. Make sure it also matches the database you intend to use
     exclude='',
     name=schema_name,
     table_names=None
@@ -92,12 +92,12 @@
     {% if technical_owner %}
         {% do sources_yaml.append('          technical_owner: ' ~ technical_owner)%}
     {% else %}
-        {% do sources_yaml.append('          technical_owner: Unassigned')%}
+        {% do sources_yaml.append('          technical_owner: none')%}
     {% endif %}
     {% if business_owner %}
         {% do sources_yaml.append('          business_owner: ' ~ business_owner)%}
     {% else %}
-        {% do sources_yaml.append('          business_owner: Unassigned')%}        
+        {% do sources_yaml.append('          business_owner: none')%}        
     {% endif %}
 
 
