@@ -38,7 +38,8 @@
     table_pattern='%',
     exclude='',
     name=schema_name,
-    table_names=None
+    table_names=None,
+    case_sensitive_cols=True
     ) %}
     {# The default table_pattern is adapted to the postgres database. Make sure it also matches the database you intend to use #},
 
@@ -109,9 +110,12 @@
         ) %}
 
         {% set columns=adapter.get_columns_in_relation(table_relation) %}
-
         {% for column in columns %}
-            {% do sources_yaml.append('          - name: ' ~ column.name | lower ) %}
+            {% if case_sensitive_cols %}
+                {% do sources_yaml.append('          - name: ' ~ column.name ) %}   
+            {% else %}
+                {% do sources_yaml.append('          - name: ' ~ column.name | lower ) %}
+            {% endif %}
             {% if include_descriptions %}
                 {% do sources_yaml.append('            description: ""' ) %}
             {% endif %}

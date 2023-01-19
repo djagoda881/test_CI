@@ -86,6 +86,9 @@ def bootstrap_yaml(
         "-t",
         help="The environment to use. This should only be altered in production.",
     ),
+    case_sensitive_cols: bool = typer.Option(
+        True, "--case_sensitive_cols", help="Whether the database is case-sensitive."
+    ),
 ):
     """
     Bootstrap the YAML file for a particular model. The model must already be materialized.
@@ -97,6 +100,7 @@ def bootstrap_yaml(
         technical_owner (str, Optional): The technical owner of the table.
         business_owner (str, Optional): The business owner of the table.
         target (str, Optional): The environment to use. This should only be altered in production.
+        case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
 
     The model can be materialized by using a command `dbt run -m <MODEL_NAME>`
 
@@ -123,7 +127,7 @@ def bootstrap_yaml(
             f"Please provide a [white]business owner[/white] for model [blue]{model_name}[/blue] and then press [green]ENTER[/green]"
         )
 
-    generate_model_yaml_text_command = f"""dbt -q run-operation generate_model_yaml --target {target} --args '{{"model_name": "{model_name}", "technical_owner":{technical_owner}, "business_owner":{business_owner}, "upstream_metadata": true}}'"""
+    generate_model_yaml_text_command = f"""dbt -q run-operation generate_model_yaml --target {target} --args '{{"model_name": "{model_name}", "technical_owner":{technical_owner}, "business_owner":{business_owner}, "upstream_metadata": true, "case_sensitive_cols": {case_sensitive_cols}}}'"""
     model_yaml_text = call_shell(generate_model_yaml_text_command)
     with open(yml_path, "w") as file:
         file.write(model_yaml_text)

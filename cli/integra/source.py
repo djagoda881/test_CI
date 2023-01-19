@@ -47,8 +47,12 @@ def check_if_source_table_exists(source: str, table_name: str) -> bool:
 @app.command()
 @run_in_dbt_project
 def create(
+    
     source: str,
+    case_sensitive_cols: bool = True,
+   
     force: bool = typer.Option(False, "--force", "-f"),
+,
     no_profile: bool = typer.Option(False, "--no-profile", "-np"),
 ):
     """
@@ -224,7 +228,7 @@ def add(
             f"\nPlease type the [white]business owner[/white] for the source table [blue]{fqn_fmt}[/blue] and then press [green]ENTER[/green].\n"
         )
 
-    generate_source_text_command = f"""dbt -q run-operation generate_source --args '{{"schema_name": "{source}", "table_names": ["{table_name}",], "technical_owner": "{technical_owner}", "business_owner": "{business_owner}"}}'"""
+    generate_source_text_command = f"""dbt -q run-operation generate_source --args '{{"schema_name": "{source}", "table_names": ["{table_name}",], "technical_owner": "{technical_owner}", "business_owner": "{business_owner}", "case_sensitive_cols": {case_sensitive_cols}}}'"""
     source_text = call_shell(generate_source_text_command)
 
     with open(source_path, "a") as file:

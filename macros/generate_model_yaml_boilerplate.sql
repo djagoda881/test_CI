@@ -1,7 +1,7 @@
 {# Adapted from dbt-codegen #}
 
 {# Generate column YAML template #}
-{% macro generate_column_yaml(column, model_yaml, columns_metadata_dict, parent_column_name="", include_pii_tag=True) %}
+{% macro generate_column_yaml(column, model_yaml, columns_metadata_dict, parent_column_name="", include_pii_tag=True, case_sensitive_cols=True) %}
 
     {{ log("Generating YAML for column '" ~ column.name ~ "'...") }}
 
@@ -11,15 +11,23 @@
         {% set column_name = column.name %}
     {% endif %}
 
-    {% set column_metadata_dict = columns_metadata_dict.get(column.name | lower, {}) %}
-
+    {% if case_sensitive_cols %}
+        {% set column_metadata_dict = columns_metadata_dict.get(column.name, {}) %}
+    {% else %}
+        {% set column_metadata_dict = columns_metadata_dict.get(column.name | lower, {}) %}
+    {% endif %}
     {% if include_pii_tag %}
         {% set tags = column_metadata_dict.get("tags", []) %}
     {% else %}
         {% set tags = column_metadata_dict.get("tags", []) | reject("equalto", "PII") | list %}
     {% endif %}
 
-    {% do model_yaml.append('      - name: ' ~ column.name | lower ) %}
+    {% if case_sensitive_cols %}
+        {% do model_yaml.append('      - name: ' ~ column.name ) %}
+        {% do model_yaml.append('        quote: True') %}
+    {% else %}
+        {% do model_yaml.append('      - name: ' ~ column.name | lower ) %}
+    {% endif %}
     {% do model_yaml.append('        description: "' ~ column_metadata_dict.get("description", "") ~ '"') %}
     {% do model_yaml.append('        tests:' ) %}
     {% do model_yaml.append('            # - unique' ) %}
@@ -42,7 +50,8 @@
     business_owner=none,
     upstream_metadata=True,
     include_sla=True,
-    include_pii_tag=False
+    include_pii_tag=False,
+    case_sensitive_cols=True
     ) %}
 {# 
 Generate model YAML template.
@@ -55,6 +64,7 @@ Args:
     include_sla (bool, optional): Whether to include the SLA meta key.
     include_pii_tag (bool, optional): Whether to include the PII tag.
     This may be useful when PII columns are already masked in the base table.
+    case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
 #}
 
 {{ log("Generaling model YAML for model '" ~ model_name ~ "'...") }}
@@ -88,14 +98,14 @@ Args:
 {% if technical_owner %}
     {% do model_yaml.append('      technical_owner: "' ~ technical_owner ~ '"')%}
 {% else %}
-    {% set technical_owner = metadata.get("technical_owner", "@Unassigned") %}
+    {% set technical_owner = metadata.get("technical_owner", "Unassigned") %}
     {% do model_yaml.append('      technical_owner: ' ~ technical_owner ) %}
 {% endif %}
 
 {% if business_owner %}
     {% do model_yaml.append('      business_owner: ' ~ business_owner ) %}
 {% else %}
-    {% set business_owner = metadata.get("business_owner", "@Unassigned") %}
+    {% set business_owner = metadata.get("business_owner", "Unassigned") %}
     {% do model_yaml.append('      business_owner: ' ~ business_owner ) %}
 {% endif %}
 
@@ -118,9 +128,8 @@ Args:
 
 {# Column metadata. #}
 {% set columns_metadata_dict = get_parent_source_or_model_column_metadata(model_name) if upstream_metadata else {} %}
-
 {% for column in columns %}
-    {% set model_yaml = generate_column_yaml(column, model_yaml, columns_metadata_dict, include_pii_tag=False) %}
+    {% set model_yaml = generate_column_yaml(column, model_yaml, columns_metadata_dict, include_pii_tag=False, case_sensitive_cols=True) %}
 {% endfor %}
 
 {%- if execute -%}
