@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 PROJECT_DIR = find_dbt_project()
 
-VALID_SCHEMA_VERSION: int = 2
+VALID_SCHEMA_VERSION = 2
 
 
 def get_dbt_object_type(data: str) -> str:
@@ -32,11 +32,11 @@ def get_dbt_object_type(data: str) -> str:
         schema_type (str): the schema type of the dbt object. ("sources", "models", or "seeds").
     """
     if "sources" in data:
-        schema_type: str = "sources"
+        schema_type = "sources"
     elif "models" in data:
-        schema_type: str = "models"
+        schema_type = "models"
     elif "seeds" in data:
-        schema_type: str = "seeds"
+        schema_type = "seeds"
     return schema_type
 
 
@@ -48,16 +48,16 @@ def get_metadata_information(file_path: str) -> list:
         file_path (str): Path to the metadata file of a dbt object.
 
     Returns:
-        metadata_information (str): The metadata information of the dbt object.
+        metadata_information (List[dict]): The metadata information of the dbt object.
     """
     with open(file_path) as file:
         data: dict = yaml.safe_load(file)
 
     schema_type: str = get_dbt_object_type(data)
-    metadata_information: list = data[schema_type]
+    metadata_information: List[dict] = data[schema_type]
 
     if schema_type == "sources":
-        metadata_information: list = metadata_information[0].get("tables")
+        metadata_information: List[dict] = metadata_information[0].get("tables")
 
     return metadata_information
 
@@ -72,19 +72,19 @@ def validate_description_in_file(file_path: str) -> bool:
     Returns:
         bool: `True` if all the field is valid, `Exception` otherwise.
     """
-    information: list = get_metadata_information(file_path=file_path)
+    information: List[dict] = get_metadata_information(file_path=file_path)
 
-    descriptions: list = []
+    descriptions = []
     for table in information:
         table_description: str = table.get("description")
         descriptions.append(table_description)
-        columns: list = table.get("columns")
+        columns: List[dict] = table.get("columns")
         for column in columns:
             column_description: str = column.get("description")
             descriptions.append(column_description)
 
-    all_descriptions_filled: bool = all(descriptions)
-    if not all_descriptions_filled:
+    are_all_descriptions_filled = all(descriptions)
+    if not are_all_descriptions_filled:
         raise ValueError(f"Please fill all descriptions in {file_path} file.")
 
     return True
@@ -100,33 +100,31 @@ def validate_technical_owner_in_file(file_path: str, email_domain: str) -> bool:
     Returns:
         bool: `True` if all the field is valid, `Exception` otherwise.
     """
-    information: list = get_metadata_information(file_path=file_path)
+    information: List[dict] = get_metadata_information(file_path=file_path)
 
-    technical_owners: list = []
+    technical_owners = []
     for table in information:
         technical_owner: str = table.get("meta").get("technical_owner")
         technical_owners.append(technical_owner)
 
-    all_technical_owners_are_filled: bool = all(technical_owners)
-    if not all_technical_owners_are_filled:
+    are_all_technical_owners_filled = all(technical_owners)
+    if not are_all_technical_owners_filled:
         raise ValueError(f"Please fill in the technical owner in the {file_path} file.")
 
-    email_termination: str = f"@{email_domain}" if email_domain else ""
+    email_termination = f"@{email_domain}" if email_domain else ""
 
-    technical_owners_validity: list = []
+    technical_owners_validity = []
     for technical_owner in technical_owners:
-        technical_owner_is_valid_email: bool = technical_owner.endswith(
-            email_termination
-        )
-        technical_owner_is_valid_group: bool = technical_owner.startswith("@")
+        is_technical_owner_a_valid_email = technical_owner.endswith(email_termination)
+        is_technical_owner_a_valid_group = technical_owner.startswith("@")
 
-        technical_owner_is_valid: bool = bool(
-            technical_owner_is_valid_email or technical_owner_is_valid_group
+        is_technical_owner_valid = bool(
+            is_technical_owner_a_valid_email or is_technical_owner_a_valid_group
         )
-        technical_owners_validity.append(technical_owner_is_valid)
+        technical_owners_validity.append(is_technical_owner_valid)
 
-    all_technical_owners_are_valid: bool = all(technical_owners_validity)
-    if not all_technical_owners_are_valid:
+    are_all_technical_owners_valid = all(technical_owners_validity)
+    if not are_all_technical_owners_valid:
         raise ValueError(
             f"Please insert valid technical owner in {file_path} file. technical_owner should be an email {'ending with ' + email_termination if email_termination else ''} or a group starting with '@'."
         )
@@ -144,31 +142,31 @@ def validate_business_owner_in_file(file_path: str, email_domain: str) -> bool:
     Returns:
         bool: `True` if all the field is valid, `Exception` otherwise.
     """
-    information: list = get_metadata_information(file_path=file_path)
+    information: List[dict] = get_metadata_information(file_path=file_path)
 
-    business_owners: list = []
+    business_owners = []
     for table in information:
         business_owner: str = table.get("meta").get("business_owner")
         business_owners.append(business_owner)
 
-    all_business_owners_are_filled: bool = all(business_owners)
-    if not all_business_owners_are_filled:
+    are_all_business_owners_filled = all(business_owners)
+    if not are_all_business_owners_filled:
         raise ValueError(f"Please fill in the business owner in the {file_path} file.")
 
     email_termination: str = f"@{email_domain}" if email_domain else ""
 
-    business_owners_validity: list = []
+    business_owners_validity = []
     for business_owner in business_owners:
-        business_owner_is_valid_email: bool = business_owner.endswith(email_termination)
-        business_owner_is_valid_group: bool = business_owner.startswith("@")
+        is_business_owner_a_valid_email = business_owner.endswith(email_termination)
+        is_business_owner_a_valid_group = business_owner.startswith("@")
 
         business_owner_is_valid = bool(
-            business_owner_is_valid_email or business_owner_is_valid_group
+            is_business_owner_a_valid_email or is_business_owner_a_valid_group
         )
         business_owners_validity.append(business_owner_is_valid)
 
-    all_business_owners_are_valid: bool = all(business_owners_validity)
-    if not all_business_owners_are_valid:
+    are_all_business_owners_valid = all(business_owners_validity)
+    if not are_all_business_owners_valid:
         raise ValueError(
             f"Please insert valid business owner in {file_path} file. business_owner should be an email {'ending with ' + email_termination if email_termination else ''} or a group starting with '@'."
         )
@@ -248,9 +246,9 @@ def get_yaml_paths_under_directory(directory_path: str) -> List[str]:
     Returns:
         paths_to_metadata_yamls (List[str]): List containing absolute paths to yaml files under dir_list
     """
-    paths_to_metadata_yamls: list = []
+    paths_to_metadata_yamls = []
     for path in Path(directory_path).rglob("*.yml"):
-        absoute_path: str = str(path.absolute())
+        absoute_path = str(path.absolute())
         paths_to_metadata_yamls.append(absoute_path)
 
     return paths_to_metadata_yamls
@@ -266,7 +264,7 @@ def get_models_and_seeds_paths(project_dir: str) -> List[str]:
     Returns:
         models_and_seeds_full_paths: The full path of every.
     """
-    project_yml_path: str = f"{project_dir}/dbt_project.yml"
+    project_yml_path = f"{project_dir}/dbt_project.yml"
 
     with open(project_yml_path) as file:
         data: dict = yaml.safe_load(file)
@@ -275,7 +273,7 @@ def get_models_and_seeds_paths(project_dir: str) -> List[str]:
 
     models_and_seeds_paths: list = models_paths + seeds_paths
 
-    models_and_seeds_full_paths: list = [
+    models_and_seeds_full_paths = [
         os.path.join(project_dir, model_or_seed_path)
         for model_or_seed_path in models_and_seeds_paths
     ]
@@ -300,7 +298,7 @@ def run_table_level_validation(
 
     models_and_seeds_paths: list = get_models_and_seeds_paths(project_dir)
 
-    paths_of_files_to_validate: list = []
+    paths_of_files_to_validate = []
     # Get path of yamls under models and seeds dirs
     for directory_path in models_and_seeds_paths:
         yamls_paths: list = get_yaml_paths_under_directory(directory_path)
