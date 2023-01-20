@@ -1,11 +1,13 @@
 import pandas as pd
 import pytest
 import yaml
-import sqlite3
 import random
 import pdb
 import os
 import shutil
+import builtins
+import mock
+from getkey import key
 
 from faker import Faker
 from datetime import datetime
@@ -16,29 +18,30 @@ from integra.base_model import check_if_base_model_exists, create
 from integra.model import bootstrap, bootstrap_yaml
 from integra.common import DBT_PROJECT_DIR, BASE_MODELS_SCHEMA, run_in_dbt_project
 from integra.source import check_if_source_exists, check_if_source_table_exists
-from integra.source import create as create_source
+from integra.source import create as create_source, add as add_source
 from integra.seed import create_yaml, register
 from integra.seed import (
     check_seed_in_yaml,
     get_all_seeds,
 )
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 fake = Faker()
 
 TEST_SOURCE = "public"
-TEST_TABLE = "test_table_contacts"
+TEST_TABLE_CONTACTS = "test_table_contacts"
+TEST_TABLE_ACCOUNTS = "test_table_accounts"
 MART = "unit_test"
 PROJECT = "unit_test"
 MODEL = "test_model"
 
-account_nrows = 100
+nrows = 100
 
 sql_path = DBT_PROJECT_DIR.joinpath(
-    "models", BASE_MODELS_SCHEMA, TEST_SOURCE, TEST_TABLE + ".sql"
+    "models", BASE_MODELS_SCHEMA, TEST_SOURCE, TEST_TABLE_CONTACTS + ".sql"
 )
 yml_path = DBT_PROJECT_DIR.joinpath(
-    "models", BASE_MODELS_SCHEMA, TEST_SOURCE, TEST_TABLE + ".yml"
+    "models", BASE_MODELS_SCHEMA, TEST_SOURCE, TEST_TABLE_CONTACTS + ".yml"
 )
 source_path = DBT_PROJECT_DIR.joinpath(
     "models", "sources", TEST_SOURCE, TEST_SOURCE + ".yml"
@@ -50,11 +53,14 @@ model_yaml_path = DBT_PROJECT_DIR.joinpath(
     "models", "marts", MART, PROJECT, MODEL, MODEL + ".yml"
 )
 
+engine = create_engine("postgresql://user:password@postgres:5432/db")
 
-def create_sqllite_source():
+
+@pytest.fixture()
+def create_data_contacts_table():
     class Contact(BaseModel):
         Id: str = Field(default_factory=lambda: i)
-        AccountId: str = Field(default_factory=lambda: random.randint(1, account_nrows))
+        AccountId: str = Field(default_factory=lambda: random.randint(1, nrows))
         FirstName: str = Field(default_factory=fake.first_name)
         LastName: str = Field(default_factory=fake.last_name)
         ContactEMail: str = Field(default_factory=fake.email)
@@ -65,6 +71,19 @@ def create_sqllite_source():
             default_factory=datetime.utcnow, alias="_viadot_downloaded_at_utc"
         )
 
+    contacts = []
+
+    for i in range(1, nrows + 1):
+        contacts.append(Contact(Id=i).dict(by_alias=True))
+    contacts_df_pandas = pd.DataFrame(contacts)
+
+    contacts_df_pandas.to_sql(
+        TEST_TABLE_CONTACTS, engine, if_exists="replace", index=False
+    )
+
+
+@pytest.fixture()
+def add_data_accouts_table():
     class Account(BaseModel):
         id: str = Field(default_factory=lambda: i)
         name: str = Field(default_factory=fake.company)
@@ -77,26 +96,42 @@ def create_sqllite_source():
             default_factory=datetime.utcnow, alias="_viadot_downloaded_at_utc"
         )
 
-    contacts = []
-    contact_nrows = 1000
-    for i in range(1, contact_nrows + 1):
-        contacts.append(Contact(Id=i).dict(by_alias=True))
-    contacts_df_pandas = pd.DataFrame(contacts)
-
     accounts = []
 
-    for i in range(1, account_nrows + 1):
-        accounts.append(Account(Id=i).dict(by_alias=True))
+    for i in range(1, nrows + 1):
+        accounts.append(Account(id=i).dict(by_alias=True))
     accounts_df_pandas = pd.DataFrame(accounts)
 
-    engine = create_engine("postgresql://user:password@localhost:5432/db")
-
     accounts_df_pandas.to_sql(
-        "test_table_accounts", engine, if_exists="replace", index=False
+        TEST_TABLE_ACCOUNTS, engine, if_exists="replace", index=False
     )
 
-    contacts_df_pandas.to_sql(
-        "test_table_contacts", engine, if_exists="replace", index=False
+    yield
+
+    engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_ACCOUNTS};")
+
+
+@pytest.fixture()
+def clean_up_project():
+
+    engine.execute("DROP TABLE IF EXISTS countries;")
+    engine.execute(f"DROP VIEW IF EXISTS {MODEL};")
+    engine.execute(f"DROP VIEW IF EXISTS stg_{TEST_TABLE_CONTACTS};")
+    engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACTS};")
+
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "marts", MART),
+        ignore_errors=True,
+    )
+
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
+        ignore_errors=True,
+    )
+
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_SOURCE),
+        ignore_errors=True,
     )
 
 
@@ -118,7 +153,7 @@ def test_run_in_dbt_project():
 # ------------------------------- START INTEGRA SOURCE TESTING ----------------------------- #
 
 
-def test_check_if_source_exists():
+def test_check_if_source_exists(clean_up_project):
 
     assert not check_if_source_exists(TEST_SOURCE)
 
@@ -134,25 +169,25 @@ def test_check_if_source_exists():
 
 def test_check_if_source_table_exists():
 
-    assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE)
+    assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACTS)
 
     source_path.parent.mkdir(parents=True, exist_ok=True)
 
     source_yaml = {
         "version": 2,
-        "sources": [{"name": TEST_SOURCE, "tables": [{"name": TEST_TABLE}]}],
+        "sources": [{"name": TEST_SOURCE, "tables": [{"name": TEST_TABLE_CONTACTS}]}],
     }
     with open(source_path, "w") as f:
         yaml.dump(source_yaml, f)
 
-    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE)
+    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACTS)
     shutil.rmtree(
         DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
         ignore_errors=True,
     )
 
 
-def test_source_create():
+def test_source_create(create_data_contacts_table):
 
     assert not check_if_source_exists(TEST_SOURCE)
 
@@ -163,13 +198,33 @@ def test_source_create():
 
 def test_base_model_create():
 
-    create(TEST_SOURCE, TEST_TABLE)
-    os.system(f"dbt run -m {TEST_TABLE}")
+    create(TEST_SOURCE, TEST_TABLE_CONTACTS)
+    os.system(f"dbt run -m stg_{TEST_TABLE_CONTACTS}")
 
-    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE)
+    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_CONTACTS)
 
 
-# integra source add do dodania
+def test_source_add(add_data_accouts_table):
+
+    assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNTS)
+    assert not check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_ACCOUNTS)
+
+    with mock.patch.object(
+        builtins,
+        "input",
+        lambda: key.ENTER,
+    ):
+
+        add_source(
+            TEST_SOURCE,
+            TEST_TABLE_ACCOUNTS,
+            project="postgres",
+            case_sensitive_cols=True,
+        )
+
+    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNTS)
+    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_ACCOUNTS)
+
 
 # ----------------------------- START INTEGRA MODEL TESTING ---------------------------- #
 
@@ -188,27 +243,14 @@ def test_model_bootstrap_yaml():
     assert not model_yaml_path.exists()
 
     with open(model_path, "a") as f:
-        f.write("select * from {{ " + "ref( '" + MODEL + "' )" + " }}")
+        f.write(
+            "select * from {{ " + "ref( 'stg_" + TEST_TABLE_CONTACTS + "' )" + " }}"
+        )
 
     os.system(f"dbt run -m {MODEL}")
     bootstrap_yaml(MODEL, MART, PROJECT, "test", "test", "qa")
 
     assert model_path.exists()
-
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "marts", MART),
-        ignore_errors=True,
-    )
-
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
-        ignore_errors=True,
-    )
-
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_TABLE),
-        ignore_errors=True,
-    )
 
 
 # --------------------------- END INTEGRA MODEL COMMAND TESTING --------------------------- #
@@ -235,8 +277,8 @@ def test_create_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
         overwrite=False,
         yaml_path=yaml_path,
         target="qa",
-        technical_owner="ent.ext",
-        business_owner="ent.ext",
+        technical_owner="test",
+        business_owner="test",
     )
     assert registered is True
 
@@ -263,8 +305,8 @@ def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
     # create yaml with countries information
     create_yaml(
         "countries",
-        technical_owner="ent.ext",
-        business_owner="ent.ext",
+        technical_owner="test",
+        business_owner="test",
     )
 
     # create yaml with all seeds information
@@ -273,8 +315,8 @@ def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
         overwrite=False,
         yaml_path=yaml_path,
         target="qa",
-        technical_owner="ent.ext",
-        business_owner="ent.ext",
+        technical_owner="test",
+        business_owner="test",
     )
     assert registered is True
 
@@ -290,3 +332,7 @@ def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
 
 
 # --------------------------- END INTEGRA SEED COMMAND TESTING --------------------------- #
+
+
+def test_clean_up(clean_up_project):
+    assert True
