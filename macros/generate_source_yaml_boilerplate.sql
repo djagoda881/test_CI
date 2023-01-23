@@ -32,12 +32,12 @@
         "warn_after": "{count: 24, period: hour}",
         "error_after": "{count: 48, period: hour}"
         },
-    table_pattern='%', -- The default table_pattern is adapted to the postgres database. Make sure it also matches the database you intend to use
+    table_pattern='%',
     exclude='',
     name=schema_name,
     table_names=None
     ) %}
-
+    {# The default table_pattern is adapted to the postgres database. Make sure it also matches the database you intend to use #},
 
 {% set sources_yaml=[] %}
 
