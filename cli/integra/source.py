@@ -60,6 +60,7 @@ def create(
 
     Args:
         source (str): The name of the source schema.
+        case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
         force (bool, optional): Overwrites the existing source. Defaults to False.
         no_profile (bool, optional): Whether to perform table profiling. Defaults to False.
 
@@ -167,6 +168,7 @@ def add(
         no_profile (bool, optional): Whether to perform table profiling.
         The generated profile will be added to each table's documentation.
         Defaults to False.
+        project (str, optional): The name of dbt project
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
 
     Raises:

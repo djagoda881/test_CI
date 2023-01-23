@@ -39,15 +39,14 @@ def create(
     force: bool = typer.Option(False, "--force", "-f"),
 ):
     """
-    Creates base_model.sql and base_model.yml for the specified table from source.
+    Creates a base model for the selected table from the source.
 
     Args:
         source (str): The name of the source schema.
         table_name (str): The name of the table to add.
-        project (str): The name of current dbt project.
+        project (str, optional): The name of dbt current project.
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
-        force (bool, optional): Specifies whether the model is to be overwritten. Defaults to False.
-
+        force (bool, optional): Overwrites the existing source. Defaults to False.
     """
     base_dir = DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA, source)
     yml_path = base_dir.joinpath(f"stg_{table_name}.yml")

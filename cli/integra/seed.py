@@ -21,7 +21,15 @@ DEFAULT_SEED_SCHEMA_PATH = DBT_PROJECT_DIR.joinpath(
 def _excel_to_csv(
     filename: str = None, yaml_path: str = DEFAULT_SEED_SCHEMA_PATH
 ) -> None:
-    "Creates a csv file copying an excel file"
+
+    """
+    Creates a csv file copying an excel file
+
+    Args:
+        filename (str, optional): The name of the file to transform. Defaults to None.
+        yaml_path (str, optional): The path to the file with seed YAML schema. Defaults to 'DEFAULT_SEED_SCHEMA_PATH' variable.
+
+    """
 
     # Where all seeds are located
     seeds_dir = yaml_path.parent
@@ -71,9 +79,13 @@ def _excel_to_csv(
 def get_all_seeds(target: str = "qa") -> List[str]:
     """
     Runs 'dbt --resource-type seed' to retrieve all seed in project.
-    Returns the all the seed names in your project
-    """
 
+    Args:
+        target (str, optional) The target to work with, options are ('qa', 'prod'). Defaults to qa.
+
+    Returns:
+        list: All seed names in your project.
+    """
     seed_paths = (
         call_shell(f"""dbt ls --resource-type seed --target {target}""")
         .strip()
