@@ -12,7 +12,7 @@ services:
     container_name: data_platform_test
     volumes:
       - ./postgres:/home/viadot/postgres
-      - ${HOME}/.dbt/profiles_test.yml:/home/viadot/.dbt/profiles_test.yml
+      - ./.dbt/profiles.yml:/home/viadot/.dbt/profiles.yml
     shm_size: '4gb'
     command: "sleep infinity"
     environment:

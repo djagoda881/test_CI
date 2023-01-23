@@ -92,11 +92,11 @@ def create_sqllite_source():
     engine = create_engine("postgresql://user:password@localhost:5432/db")
 
     accounts_df_pandas.to_sql(
-        "test_table_accounts", engine, if_exists="append", index=False
+        "test_table_accounts", engine, if_exists="replace", index=False
     )
 
     contacts_df_pandas.to_sql(
-        "test_table_contacts", engine, if_exists="append", index=False
+        "test_table_contacts", engine, if_exists="replace", index=False
     )
 
 

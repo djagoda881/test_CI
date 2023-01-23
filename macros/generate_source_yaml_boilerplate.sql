@@ -89,17 +89,8 @@
 
 
     {% do sources_yaml.append('        meta:' ) %}
-    {% if technical_owner %}
-        {% do sources_yaml.append('          technical_owner: ' ~ technical_owner)%}
-    {% else %}
-        {% do sources_yaml.append('          technical_owner: none')%}
-    {% endif %}
-    {% if business_owner %}
-        {% do sources_yaml.append('          business_owner: ' ~ business_owner)%}
-    {% else %}
-        {% do sources_yaml.append('          business_owner: none')%}        
-    {% endif %}
-
+    {% do sources_yaml.append('          technical_owner: ' ~ technical_owner)%}
+    {% do sources_yaml.append('          business_owner: ' ~ business_owner)%}
 
     {% if include_sla %}
         {% do sources_yaml.append('          SLA: "24 hours"' ) %}

@@ -34,7 +34,7 @@ def check_if_base_model_exists(source: str, table_name: str) -> bool:
 def create(
     source: str,
     table_name: str,
-    project: str = "postgres",
+    project: str,
     case_sensitive_cols: bool = True,
     force: bool = typer.Option(False, "--force", "-f"),
 ):
@@ -44,7 +44,7 @@ def create(
     Args:
         source (str): The name of the source schema.
         table_name (str): The name of the table to add.
-        project (str, optional): The name of dbt project. Defaults to 'postgres'.
+        project (str): The name of current dbt project.
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
         force (bool, optional): Specifies whether the model is to be overwritten. Defaults to False.
 

@@ -9,5 +9,5 @@ cp countries.csv postgres/seeds/
 cp requirements.txt postgres/
 cp setup.sh postgres/
 
-mkdir -p ~/.dbt && cp profiles_test.yml ~/.dbt
+mkdir -p .dbt/ && cp profiles_test.yml .dbt/
 

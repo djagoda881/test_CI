@@ -16,7 +16,5 @@ RUN apt install -y python3-pip
 RUN chmod a+x setup.sh
 USER viadot
 RUN echo 'alias ll="ls -alF"' >> ~/.bashrc
-RUN pip install -r requirements.txt
-
 
 RUN ./setup.sh

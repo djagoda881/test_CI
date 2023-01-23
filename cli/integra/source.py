@@ -84,6 +84,7 @@ def create(source: str, force: bool = typer.Option(False, "--force", "-f")):
 def add(
     source: str = typer.Argument(..., help="The name of the source schema."),
     table_name: str = typer.Argument(..., help="The name of the table to add."),
+    project: str = typer.Argument(..., help="Name of the current dbt_project."),
     technical_owner: str = typer.Option(
         None, "--technical-owner", help="The technical owner of the table."
     ),
@@ -91,7 +92,6 @@ def add(
         None, "--business-owner", help="The business owner of the table."
     ),
     no_profile: bool = typer.Option(False, "--no-profile", "-np"),
-    project: str = typer.Option("postgres", "--project", help="Name of dbt_project."),
     case_sensitive_cols: bool = typer.Option(
         True, "--case_sensitive_cols", help="Whether the database is case-sensitive."
     ),
@@ -102,12 +102,12 @@ def add(
     Args:
         source (str): The name of the source schema.
         table_name (str): The name of the table to add.
+        project (str): The name of current dbt project.
         technical_owner (str): The technical owner of the table.
         business_owner (str): The business owner of the table.
         no_profile (bool, optional): Whether to perform table profiling.
         The generated profile will be added to each table's documentation.
         Defaults to False.
-        project (str, optional): The name of dbt project. Defaults to 'postgres'.
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
 
     Raises:

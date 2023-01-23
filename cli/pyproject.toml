@@ -7,8 +7,6 @@ requires-python = ">=3.9,<4"
 dynamic = ["version", "description"]
 dependencies = [
     "typer>=0.4.1,<0.5",
-    "prefect>=2.4.0,<3.0",
-    "dbt-databricks>=1.2.0,<1.3",
     "acryl-datahub==0.8.43"  # Must match DataHub server version.
 ]
 
