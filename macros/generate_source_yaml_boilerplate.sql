@@ -15,6 +15,14 @@
 
 {% endmacro %}
 
+{% macro get_tables(schema_name, database_name=target.database, table_pattern='%', exclude='') %}
+
+    {% set tables=codegen.get_tables_in_schema(schema_name, database_name, table_pattern, exclude) %}
+    {% set tables = tables | join (',') %}
+    {{ print(tables) }}
+    {% do return(tables) %}
+
+{% endmacro %}
 
 ---
 {% macro generate_source(
@@ -23,8 +31,8 @@
     business_owner=none,
     database_name=target.database,
     generate_columns=True,
-    include_descriptions=False,
-    include_table_profiling=False,
+    include_descriptions=True,
+    include_table_profiling=True,
     include_sla=True,
     include_freshness=True,
     loaded_at_field="_viadot_downloaded_at_utc::timestamp",

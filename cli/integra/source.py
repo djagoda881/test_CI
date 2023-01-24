@@ -46,7 +46,22 @@ def check_if_source_table_exists(source: str, table_name: str) -> bool:
 
 @app.command()
 @run_in_dbt_project
-def create(source: str, force: bool = typer.Option(False, "--force", "-f")):
+def create(
+    source: str,
+    force: bool = typer.Option(False, "--force", "-f"),
+    no_profile: bool = typer.Option(False, "--no-profile", "-np"),
+):
+    """
+    Adds a new source with all existing tables in it.
+
+    Args:
+        source (str): The name of the source schema.
+        force (bool, optional): Overwrites the existing source. Defaults to False.
+        no_profile (bool, optional): Whether to perform table profiling. Defaults to False.
+
+    Returns:
+        bool: Whether the operation was successful.
+    """
 
     base_dir = DBT_PROJECT_DIR.joinpath("models", "sources", source)
     source_path = base_dir.joinpath(source + ".yml")
@@ -65,6 +80,48 @@ def create(source: str, force: bool = typer.Option(False, "--force", "-f")):
         operation = "creating"
 
     print(f"[white]{operation.title()} source[/white] [blue]{source}[/blue]...")
+
+    download_tables = (
+        f"""dbt -q run-operation get_tables --args '{{"schema_name": "{source}"}}'"""
+    )
+    source_tables = call_shell(download_tables)
+    source_tables = source_tables.strip().split(",")
+
+    for table in source_tables:
+
+        docs_path = base_dir.joinpath(f"{table}.md")
+        docs_path_fmt = f"[bright_black]{docs_path}[/bright_black]"
+        fqn_fmt = f"[white]{source}.{table}[/white]"
+
+        if no_profile:
+            print(f"Creating description template for model {fqn_fmt}...")
+            content = call_shell(
+                f"""dbt -q run-operation create_description_markdown --args '{{"schema": "{source}", "relation_name": {table}}}'"""
+            )
+            success_msg = (
+                f"Description template successfully written to {docs_path_fmt}."
+            )
+        else:
+            print(f"Profiling source table {fqn_fmt}...")
+            content = call_shell(
+                f"""dbt -q run-operation print_profile_docs --args '{{"schema": "{source}", "relation_name": {table}}}'"""
+            )
+            success_msg = f"Profile successfully written to {docs_path_fmt}."
+
+        with open(docs_path, "w") as file:
+            file.write(content)
+
+        print(success_msg)
+
+        print(
+            Panel(
+                f"""Please open {docs_path_fmt}
+                and add your description in the [blue]📝 Details[/blue] section before continuing.""",
+                title="ATTENTION",
+                width=90,
+            )
+        )
+        Prompt.ask("Press [green]ENTER[/green] to continue")
 
     generate_yaml_text_command = f"""dbt -q run-operation generate_source --args '{{"schema_name": "{source}"}}'"""
     yaml_text = call_shell(generate_yaml_text_command)
