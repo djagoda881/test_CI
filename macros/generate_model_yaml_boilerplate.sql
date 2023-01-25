@@ -51,7 +51,8 @@
     upstream_metadata=True,
     include_sla=True,
     include_pii_tag=False,
-    case_sensitive_cols=True
+    case_sensitive_cols=True,
+    base_model=False
     ) %}
 {# 
 Generate model YAML template.
@@ -83,7 +84,12 @@ Args:
 {% do model_yaml.append('version: 2') %}
 {% do model_yaml.append('') %}
 {% do model_yaml.append('models:') %}
-{% do model_yaml.append('  - name: ' ~ model_name | lower) %}
+
+{% if base_model %}
+    {% do model_yaml.append('  - name: stg_' ~ model_name | lower) %}
+{% else %}
+    {% do model_yaml.append('  - name: ' ~ model_name | lower) %}
+{% endif %}
 
 {% if upstream_model_type == "source" %}
     {% do model_yaml.append('    description: Base model of the `' ~ model_name ~ "` table.") %}

@@ -85,7 +85,7 @@ def create(
     # Generate YAML
     print(f"{operation.title()} YAML template for base model {fqn}...")
     base_model_yaml_content = call_shell(
-        f"""dbt -q run-operation generate_model_yaml --args '{{"model_name": "{table_name}"}}'"""
+        f"""dbt -q run-operation generate_model_yaml --args '{{"model_name": "{table_name}", "base_model": True }}'"""
     )
     with open(yml_path, "w") as file:
         file.write(base_model_yaml_content)

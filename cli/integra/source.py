@@ -47,12 +47,9 @@ def check_if_source_table_exists(source: str, table_name: str) -> bool:
 @app.command()
 @run_in_dbt_project
 def create(
-    
     source: str,
     case_sensitive_cols: bool = True,
-   
     force: bool = typer.Option(False, "--force", "-f"),
-,
     no_profile: bool = typer.Option(False, "--no-profile", "-np"),
 ):
     """
