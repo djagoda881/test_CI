@@ -81,9 +81,7 @@ def create(
 
     print(f"[white]{operation.title()} source[/white] [blue]{source}[/blue]...")
 
-    download_tables = (
-        f"""dbt -q run-operation get_tables --args '{{"schema_name": "{source}"}}'"""
-    )
+    download_tables = f"""dbt -q run-operation get_tables_in_schema --args '{{"schema_name": "{source}", "print_result": "True"}}'"""
     source_tables = call_shell(download_tables)
     source_tables = source_tables.strip().split(",")
 

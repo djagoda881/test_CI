@@ -1,6 +1,6 @@
 {# Adapted from dbt-codegen #}
 
-{% macro get_tables_in_schema(schema_name, database_name=target.database, table_pattern='%', exclude='') %}
+{% macro get_tables_in_schema(schema_name, database_name=target.database, table_pattern='%', exclude='', print_result=False) %}
 
     {% set tables=dbt_utils.get_relations_by_pattern(
         schema_pattern=schema_name,
@@ -10,17 +10,13 @@
     ) %}
 
     {% set table_list= tables | map(attribute='identifier') %}
+    
+    {% if print_result %}
+        {{ print(table_list | join (',')) }}
+        {% do return(tables) %}
+    {% endif %}    
 
     {{ return(table_list | sort) }}
-
-{% endmacro %}
-
-{% macro get_tables(schema_name, database_name=target.database, table_pattern='%', exclude='') %}
-
-    {% set tables=codegen.get_tables_in_schema(schema_name, database_name, table_pattern, exclude) %}
-    {% set tables = tables | join (',') %}
-    {{ print(tables) }}
-    {% do return(tables) %}
 
 {% endmacro %}
 
