@@ -13,7 +13,6 @@
     
     {% if print_result %}
         {{ print(table_list | join (',')) }}
-        {% do return(tables) %}
     {% endif %}    
 
     {{ return(table_list | sort) }}
