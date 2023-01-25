@@ -1,4 +1,4 @@
-{% macro generate_base_model(source_name, table_name, leading_commas=False, case_sensitive_cols=False) %}
+{% macro generate_base_model(source_name, table_name, project, leading_commas=False, case_sensitive_cols=False) %}
 
 {%- set source_relation = source(source_name, table_name) -%}
 
@@ -7,7 +7,7 @@
 
 {%- set base_model_sql -%}
 with _masked as (
-    select {{ hash_source_pii_columns(table=table_name) }}
+    select {{ hash_source_pii_columns(table=table_name, schema=source_name, project=project ) }}
     from {{ "{{ source(" ~ '"' ~ source_name ~ '"' ~ ", " ~ '"' ~ table_name ~ '"' ~ ") }}" }}
 ),
 

@@ -1,6 +1,6 @@
 {# Adapted from dbt-codegen #}
 
-{% macro get_tables_in_schema(schema_name, database_name=target.database, table_pattern='%', exclude='') %}
+{% macro get_tables_in_schema(schema_name, database_name=target.database, table_pattern='%', exclude='', print_result=False) %}
 
     {% set tables=dbt_utils.get_relations_by_pattern(
         schema_pattern=schema_name,
@@ -10,11 +10,14 @@
     ) %}
 
     {% set table_list= tables | map(attribute='identifier') %}
+    
+    {% if print_result %}
+        {{ print(table_list | join (',')) }}
+    {% endif %}    
 
     {{ return(table_list | sort) }}
 
 {% endmacro %}
-
 
 ---
 {% macro generate_source(
@@ -32,12 +35,12 @@
         "warn_after": "{count: 24, period: hour}",
         "error_after": "{count: 48, period: hour}"
         },
-    table_pattern='*',
+    table_pattern='%',
     exclude='',
     name=schema_name,
     table_names=None
     ) %}
-
+    {# The default table_pattern is adapted to the postgres database. Make sure it also matches the database you intend to use #},
 
 {% set sources_yaml=[] %}
 
@@ -60,6 +63,7 @@
     {% set tables=codegen.get_tables_in_schema(schema_name, database_name, table_pattern, exclude) %}
 {% else %}
     {% set tables = table_names %}
+
 {% endif %}
 
 {% if table_names %}
@@ -68,7 +72,6 @@
 
 {% for table in tables %}
     {% do sources_yaml.append('      - name: ' ~ table | lower ) %}
-    
     {% if include_descriptions %}
         {% do sources_yaml.append('        description: |') %}
     {% endif %}
@@ -88,18 +91,9 @@
     {% do sources_yaml.append('        tags: []' ) %}
 
 
-    {% do sources_yaml.append('    meta:' ) %}
-    {% if technical_owner %}
-        {% do sources_yaml.append('      technical_owner: ' ~ technical_owner)%}
-    {% else %}
-        {% do sources_yaml.append('      technical_owner: @Unassigned')%}
-    {% endif %}
-    {% if business_owner %}
-        {% do sources_yaml.append('      business_owner: ' ~ business_owner)%}
-    {% else %}
-        {% do sources_yaml.append('      business_owner: @Unassigned')%}        
-    {% endif %}
-
+    {% do sources_yaml.append('        meta:' ) %}
+    {% do sources_yaml.append('          technical_owner: ' ~ technical_owner)%}
+    {% do sources_yaml.append('          business_owner: ' ~ business_owner)%}
 
     {% if include_sla %}
         {% do sources_yaml.append('          SLA: "24 hours"' ) %}

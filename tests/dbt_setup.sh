@@ -1,8 +1,12 @@
 
 #!/bin/bash
 
-dbt init databricks
-cp -R ../cli/ databricks/ 
-cp -R ../macros/ databricks/
-cp packages.yml databricks/
-cp countries.csv databricks/seeds/
+dbt init postgres
+cp -R ../cli/ postgres/ 
+cp -R ../macros/ postgres/
+cp packages.yml postgres/
+cp countries.csv postgres/seeds/
+cp requirements.txt postgres/
+cp setup.sh postgres/
+
+
