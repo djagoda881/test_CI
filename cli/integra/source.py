@@ -123,7 +123,7 @@ def create(
         )
         Prompt.ask("Press [green]ENTER[/green] to continue")
 
-    generate_yaml_text_command = f"""dbt -q run-operation generate_source --args '{{"schema_name": "{source}"}}'"""
+    generate_yaml_text_command = f"""dbt -q run-operation generate_source --args '{{"schema_name": "{source}", "case_sensitive_cols": {case_sensitive_cols}}}'"""
     yaml_text = call_shell(generate_yaml_text_command)
 
     with open(source_path, "w") as file:
@@ -141,7 +141,6 @@ def create(
 def add(
     source: str = typer.Argument(..., help="The name of the source schema."),
     table_name: str = typer.Argument(..., help="The name of the table to add."),
-    project: str = typer.Argument(..., help="Name of the current dbt_project."),
     technical_owner: str = typer.Option(
         None, "--technical-owner", help="The technical owner of the table."
     ),
@@ -152,6 +151,7 @@ def add(
     case_sensitive_cols: bool = typer.Option(
         True, "--case_sensitive_cols", help="Whether the database is case-sensitive."
     ),
+    project: str = DBT_PROJECT_DIR.name,
 ) -> bool:
     """
     Add a new table to a source schema and materializes it as a base model.
@@ -159,7 +159,6 @@ def add(
     Args:
         source (str): The name of the source schema.
         table_name (str): The name of the table to add.
-        project (str): The name of current dbt project.
         technical_owner (str): The technical owner of the table.
         business_owner (str): The business owner of the table.
         no_profile (bool, optional): Whether to perform table profiling.
@@ -167,6 +166,7 @@ def add(
         Defaults to False.
         project (str, optional): The name of dbt project
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
+        project (str): The name of current dbt project. Defoults to DBT_PROJECT_DIR.name variable.
 
     Raises:
         SourceTableExistsError: If the table already exists in the source YAML.

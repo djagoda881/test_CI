@@ -223,7 +223,6 @@ def test_source_add(add_data_accouts_table):
         add_source(
             TEST_SOURCE,
             TEST_TABLE_ACCOUNTS,
-            project="postgres",
             case_sensitive_cols=True,
         )
 

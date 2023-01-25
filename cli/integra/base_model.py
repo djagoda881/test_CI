@@ -34,7 +34,7 @@ def check_if_base_model_exists(source: str, table_name: str) -> bool:
 def create(
     source: str,
     table_name: str,
-    project: str,
+    project: str = DBT_PROJECT_DIR.name,
     case_sensitive_cols: bool = True,
     force: bool = typer.Option(False, "--force", "-f"),
 ):
@@ -44,7 +44,7 @@ def create(
     Args:
         source (str): The name of the source schema.
         table_name (str): The name of the table to add.
-        project (str, optional): The name of dbt current project.
+        project (str, optional): The name of dbt current project. Defoults to DBT_PROJECT_DIR.name variable.
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
         force (bool, optional): Overwrites the existing source. Defaults to False.
     """
@@ -76,7 +76,7 @@ def create(
     # Generate SQL
     print(f"{operation.title()} base model {fqn_fmt} from {source_fqn_fmt}...")
     base_model_content = call_shell(
-        f"""dbt -q run-operation generate_base_model --args '{{"source_name": "{source}", "table_name": "{table_name}","project": "{project}", "case_sensitive_cols" : {case_sensitive_cols}}}'"""
+        f"""dbt -q run-operation generate_base_model --args '{{"source_name": "{source}", "table_name": "{table_name}", "project": "{project}", "case_sensitive_cols" : {case_sensitive_cols}}}'"""
     )
     with open(sql_path, "w") as file:
         file.write(base_model_content)
