@@ -190,15 +190,20 @@ def test_check_if_source_table_exists():
 def test_source_create(create_data_contacts_table):
 
     assert not check_if_source_exists(TEST_SOURCE)
+    with mock.patch.object(
+        builtins,
+        "input",
+        lambda: key.ENTER,
+    ):
 
-    create_source(TEST_SOURCE)
+        create_source(TEST_SOURCE)
 
     assert check_if_source_exists(TEST_SOURCE)
 
 
 def test_base_model_create():
 
-    create(TEST_SOURCE, TEST_TABLE_CONTACTS)
+    create(TEST_SOURCE, TEST_TABLE_CONTACTS, project="postgres")
     os.system(f"dbt run -m stg_{TEST_TABLE_CONTACTS}")
 
     assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_CONTACTS)
