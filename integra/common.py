@@ -67,7 +67,7 @@ def find_dbt_project():
         return dbt_project_path
 
 
-DBT_PROJECT_DIR = find_dbt_project()
+DBT_PROJECT_DIR = Path(find_dbt_project())
 
 
 def run_in_dbt_project(func: callable, dbt_project_dir=DBT_PROJECT_DIR) -> callable:
