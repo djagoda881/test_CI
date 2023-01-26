@@ -53,7 +53,7 @@ def _excel_to_csv(
     for excel_file in excel_files:
         filename_without_file_extension = excel_file.split(".")[0]
         filename_with_csv_file_extension = (
-            filename_without_file_extension.replace(" ", "_") + ".csv"
+            filename_without_file_extension.replace(" ", "_").lower() + ".csv"
         )
 
         # Only create csv if it does not already exist a csv with the same filename as the excel file
@@ -63,7 +63,7 @@ def _excel_to_csv(
             df = pd.read_excel(os.path.join(seeds_dir, excel_file))
 
             df.columns = [
-                f'"{column.strip().replace(" ", "_")}"' for column in df.columns
+                f"{column.strip().replace(' ', '_')}" for column in df.columns
             ]
             # Replacing invalid character(s) among " ,;{}()\n\t=" as these are forbidden in column names by Databricks
             df.columns = df.columns.str.replace("[,;{}()\n\t=]", "", regex=True)
@@ -149,6 +149,7 @@ def create_yaml(
     business_owner: str,
     new: str = False,
     target: str = "qa",
+    case_sensitive_cols: bool = True,
 ) -> bool:
 
     """
@@ -169,7 +170,7 @@ def create_yaml(
         print("No seeds to append to YAML file")
         return False
 
-    generate_yaml_text_command = f"""dbt -q run-operation --target {target} create_seed_yaml_text --args '{{"seed_names": [{', '.join(seeds)}], "technical_owner":{technical_owner}, "business_owner":{business_owner}, "new": {new}}}'"""
+    generate_yaml_text_command = f"""dbt -q run-operation --target {target} create_seed_yaml_text --args '{{"seed_names": [{', '.join(seeds)}], "technical_owner":{technical_owner}, "business_owner":{business_owner}, "new": {new}, "case_sensitive_cols":{case_sensitive_cols}}}'"""
     yaml_text = call_shell(generate_yaml_text_command)
     return yaml_text
 

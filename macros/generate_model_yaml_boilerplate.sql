@@ -11,11 +11,7 @@
         {% set column_name = column.name %}
     {% endif %}
 
-    {% if case_sensitive_cols %}
-        {% set column_metadata_dict = columns_metadata_dict.get(column.name, {}) %}
-    {% else %}
-        {% set column_metadata_dict = columns_metadata_dict.get(column.name | lower, {}) %}
-    {% endif %}
+    {% set column_metadata_dict = columns_metadata_dict.get(column.name, {}) %}
     {% if include_pii_tag %}
         {% set tags = column_metadata_dict.get("tags", []) %}
     {% else %}

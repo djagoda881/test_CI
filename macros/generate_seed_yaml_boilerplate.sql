@@ -17,7 +17,8 @@
     generate_columns=True,
     include_descriptions=True,
     include_tags=False,
-    name=schema_name
+    name=schema_name,
+    case_sensitive_cols=True
     ) %}
 
 {% set seeds_yaml=[] %}
@@ -71,7 +72,12 @@
         {% set columns=adapter.get_columns_in_relation(table_relation) %}
 
         {% for column in columns %}
-            {% do seeds_yaml.append('      - name: ' ~ column.name | lower ) %}
+            {% if case_sensitive_cols %}
+                {% do seeds_yaml.append('      - name: ' ~ column.name) %}
+                {% do seeds_yaml.append('        quote: True') %}
+            {% else %}
+                {% do seeds_yaml.append('      - name: ' ~ column.name | lower ) %}
+            {% endif %}
             {% if include_descriptions %}
                 {% do seeds_yaml.append('        description: ""' ) %}
             {% endif %}
