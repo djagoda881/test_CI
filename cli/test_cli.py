@@ -19,7 +19,7 @@ from integra.model import bootstrap, bootstrap_yaml
 from integra.common import DBT_PROJECT_DIR, BASE_MODELS_SCHEMA, run_in_dbt_project
 from integra.source import check_if_source_exists, check_if_source_table_exists
 from integra.source import create as create_source, add as add_source
-from integra.seed import create_yaml, register
+from integra.seed import register
 from integra.seed import (
     check_seed_in_yaml,
     get_all_seeds,
@@ -51,6 +51,10 @@ model_path = DBT_PROJECT_DIR.joinpath(
 )
 model_yaml_path = DBT_PROJECT_DIR.joinpath(
     "models", "marts", MART, PROJECT, MODEL, MODEL + ".yml"
+)
+
+DEFAULT_SEED_SCHEMA_PATH = DBT_PROJECT_DIR.joinpath(
+    "seeds", "master_data", "schema.yml"
 )
 
 engine = create_engine("postgresql://user:password@postgres:5432/db")
@@ -115,9 +119,14 @@ def add_data_accouts_table():
 def clean_up_project():
 
     engine.execute("DROP TABLE IF EXISTS countries;")
+    engine.execute("DROP TABLE IF EXISTS average_salary_test;")
     engine.execute(f"DROP VIEW IF EXISTS {MODEL};")
     engine.execute(f"DROP VIEW IF EXISTS stg_{TEST_TABLE_CONTACTS};")
     engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACTS};")
+
+    DEFAULT_SEED_SCHEMA_PATH.unlink()
+    DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv").unlink()
+    DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv").unlink()
 
     shutil.rmtree(
         DBT_PROJECT_DIR.joinpath("models", "marts", MART),
@@ -153,7 +162,7 @@ def test_run_in_dbt_project():
 # ------------------------------- START INTEGRA SOURCE TESTING ----------------------------- #
 
 
-def test_check_if_source_exists(clean_up_project):
+def test_check_if_source_exists():
 
     assert not check_if_source_exists(TEST_SOURCE)
 
@@ -261,16 +270,8 @@ def test_model_bootstrap_yaml():
 
 # ----------------------------- START INTEGRA SEED TESTING ---------------------------- #
 
-DEFAULT_SEED_SCHEMA_PATH = Path(__file__).resolve().parent / "test.yml"
-
 
 def test_create_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
-
-    # Delete yaml_path if exists to ensure reproducible behaviour of test
-    try:
-        yaml_path.unlink()
-    except FileNotFoundError:
-        pass
 
     # check yaml does not exist
     assert not yaml_path.is_file()
@@ -292,28 +293,19 @@ def test_create_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
     # check if one by one if every seed info is inside yaml file
     for seed in get_all_seeds(target="qa"):
         assert check_seed_in_yaml(seed, yaml_path=yaml_path)
-    # Delete yaml_path if exists to ensure reproducible behaviour of test
-    try:
-        yaml_path.unlink()
-    except FileNotFoundError:
-        pass
 
 
 def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
 
-    # Delete yaml_path if exists to ensure reproducible behaviour of test
     try:
-        yaml_path.unlink()
-    except FileNotFoundError:
-        pass
-    # create yaml with countries information
-    create_yaml(
-        "countries",
-        technical_owner="test",
-        business_owner="test",
-    )
+        shutil.copyfile(
+            DBT_PROJECT_DIR.joinpath("countries_example.csv"),
+            DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv"),
+        )
+    except:
+        assert False, "The file was not copied"
 
-    # create yaml with all seeds information
+    # Update yaml with all new seeds information
     registered = register(
         seed=None,
         overwrite=False,
@@ -327,12 +319,6 @@ def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
     # check one by one if every seed info is inside yaml file
     for seed in get_all_seeds(target="qa"):
         assert check_seed_in_yaml(seed, yaml_path=yaml_path)
-
-    # Delete yaml_path if exists to ensure reproducible behaviour of test
-    try:
-        yaml_path.unlink()
-    except FileNotFoundError:
-        pass
 
 
 # --------------------------- END INTEGRA SEED COMMAND TESTING --------------------------- #

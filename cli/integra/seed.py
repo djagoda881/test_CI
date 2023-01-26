@@ -161,6 +161,7 @@ def create_yaml(
         business_owner (str, Optional): The business owner of the table.
         new (bool, Optional): Whether to include headers that are needed when creating a new yaml. Defaults to False.
         target (str, Optional): The target to work with, options are ('qa', 'prod'). Defaults to qa.
+        case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
 
     Returns:
         yaml_text (str): String with yaml formatting containing seeds information
