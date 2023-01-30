@@ -44,7 +44,7 @@ def create(
     Args:
         source (str): The name of the source schema.
         table_name (str): The name of the table to add.
-        project (str, optional): The name of dbt current project. Defoults to DBT_PROJECT_DIR.name variable.
+        project (str, optional): The name of dbt current project. Defaults to DBT_PROJECT_DIR.name variable.
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
         force (bool, optional): Overwrites the existing source. Defaults to False.
     """

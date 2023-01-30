@@ -164,9 +164,8 @@ def add(
         no_profile (bool, optional): Whether to perform table profiling.
         The generated profile will be added to each table's documentation.
         Defaults to False.
-        project (str, optional): The name of dbt project
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
-        project (str): The name of current dbt project. Defoults to DBT_PROJECT_DIR.name variable.
+        project (str): The name of current dbt project. Defaults to DBT_PROJECT_DIR.name variable.
 
     Raises:
         SourceTableExistsError: If the table already exists in the source YAML.

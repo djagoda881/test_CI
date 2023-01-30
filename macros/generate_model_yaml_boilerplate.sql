@@ -62,6 +62,8 @@ Args:
     include_pii_tag (bool, optional): Whether to include the PII tag.
     This may be useful when PII columns are already masked in the base table.
     case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
+    base_model (bool, optional):  Determines whether model generation is performed for base_model. 
+    In case of yml file generation for base model, prefix stg is needed before the model name. Defaults to False.
 #}
 
 {{ log("Generaling model YAML for model '" ~ model_name ~ "'...") }}
@@ -97,20 +99,9 @@ Args:
 {% do model_yaml.append('    meta:' ) %}
 {% set metadata = upstream_model_metadata.get("meta", {}) %}
 
-{% if technical_owner %}
-    {% do model_yaml.append('      technical_owner: "' ~ technical_owner ~ '"')%}
-{% else %}
-    {% set technical_owner = metadata.get("technical_owner", "Unassigned") %}
-    {% do model_yaml.append('      technical_owner: ' ~ technical_owner ) %}
-{% endif %}
 
-{% if business_owner %}
-    {% do model_yaml.append('      business_owner: ' ~ business_owner ) %}
-{% else %}
-    {% set business_owner = metadata.get("business_owner", "Unassigned") %}
-    {% do model_yaml.append('      business_owner: ' ~ business_owner ) %}
-{% endif %}
-
+{% do model_yaml.append('      technical_owner: ' ~ technical_owner )%}
+{% do model_yaml.append('      business_owner: ' ~ business_owner ) %}
 
 {% if include_sla %}
     {% set sla = metadata.get("SLA", "24 hours") %}

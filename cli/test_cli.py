@@ -29,8 +29,8 @@ from sqlalchemy import create_engine, text
 fake = Faker()
 
 TEST_SOURCE = "public"
-TEST_TABLE_CONTACTS = "test_table_contacts"
-TEST_TABLE_ACCOUNTS = "test_table_accounts"
+TEST_TABLE_CONTACT = "test_table_contact"
+TEST_TABLE_ACCOUNT = "test_table_account"
 MART = "unit_test"
 PROJECT = "unit_test"
 MODEL = "test_model"
@@ -38,10 +38,10 @@ MODEL = "test_model"
 nrows = 100
 
 sql_path = DBT_PROJECT_DIR.joinpath(
-    "models", BASE_MODELS_SCHEMA, TEST_SOURCE, TEST_TABLE_CONTACTS + ".sql"
+    "models", BASE_MODELS_SCHEMA, TEST_SOURCE, TEST_TABLE_CONTACT + ".sql"
 )
 yml_path = DBT_PROJECT_DIR.joinpath(
-    "models", BASE_MODELS_SCHEMA, TEST_SOURCE, TEST_TABLE_CONTACTS + ".yml"
+    "models", BASE_MODELS_SCHEMA, TEST_SOURCE, TEST_TABLE_CONTACT + ".yml"
 )
 source_path = DBT_PROJECT_DIR.joinpath(
     "models", "sources", TEST_SOURCE, TEST_SOURCE + ".yml"
@@ -82,11 +82,10 @@ def create_data_contacts_table():
     contacts_df_pandas = pd.DataFrame(contacts)
 
     contacts_df_pandas.to_sql(
-        TEST_TABLE_CONTACTS, engine, if_exists="replace", index=False
+        TEST_TABLE_CONTACT, engine, if_exists="replace", index=False
     )
 
 
-@pytest.fixture()
 def add_data_accouts_table():
     class Account(BaseModel):
         id: str = Field(default_factory=lambda: i)
@@ -107,41 +106,47 @@ def add_data_accouts_table():
     accounts_df_pandas = pd.DataFrame(accounts)
 
     accounts_df_pandas.to_sql(
-        TEST_TABLE_ACCOUNTS, engine, if_exists="replace", index=False
+        TEST_TABLE_ACCOUNT, engine, if_exists="replace", index=False
     )
 
-    yield
 
-    engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_ACCOUNTS};")
+@pytest.fixture(scope="session", autouse=True)
+def clean_up_project(request):
+    def cleanup():
+        engine.execute("DROP TABLE IF EXISTS countries;")
+        engine.execute("DROP TABLE IF EXISTS average_salary_test;")
+        engine.execute(f"DROP VIEW IF EXISTS {MODEL};")
+        engine.execute(f"DROP VIEW IF EXISTS stg_{TEST_TABLE_CONTACT};")
+        engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
+        engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_ACCOUNT};")
 
+        if os.path.exists(
+            DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv")
+        ):
+            DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv").unlink()
 
-@pytest.fixture()
-def clean_up_project():
+        if os.path.exists(DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv")):
+            DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv").unlink()
 
-    engine.execute("DROP TABLE IF EXISTS countries;")
-    engine.execute("DROP TABLE IF EXISTS average_salary_test;")
-    engine.execute(f"DROP VIEW IF EXISTS {MODEL};")
-    engine.execute(f"DROP VIEW IF EXISTS stg_{TEST_TABLE_CONTACTS};")
-    engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACTS};")
+        if os.path.exists(DEFAULT_SEED_SCHEMA_PATH):
+            DEFAULT_SEED_SCHEMA_PATH.unlink()
 
-    DEFAULT_SEED_SCHEMA_PATH.unlink()
-    DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv").unlink()
-    DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv").unlink()
+        shutil.rmtree(
+            DBT_PROJECT_DIR.joinpath("models", "marts", MART),
+            ignore_errors=True,
+        )
 
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "marts", MART),
-        ignore_errors=True,
-    )
+        shutil.rmtree(
+            DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
+            ignore_errors=True,
+        )
 
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
-        ignore_errors=True,
-    )
+        shutil.rmtree(
+            DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_SOURCE),
+            ignore_errors=True,
+        )
 
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_SOURCE),
-        ignore_errors=True,
-    )
+    request.addfinalizer(cleanup)
 
 
 # --------------------------- START INTEGRA COMMON COMMAND TESTING --------------------------- #
@@ -178,18 +183,18 @@ def test_check_if_source_exists():
 
 def test_check_if_source_table_exists():
 
-    assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACTS)
+    assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
 
     source_path.parent.mkdir(parents=True, exist_ok=True)
 
     source_yaml = {
         "version": 2,
-        "sources": [{"name": TEST_SOURCE, "tables": [{"name": TEST_TABLE_CONTACTS}]}],
+        "sources": [{"name": TEST_SOURCE, "tables": [{"name": TEST_TABLE_CONTACT}]}],
     }
     with open(source_path, "w") as f:
         yaml.dump(source_yaml, f)
 
-    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACTS)
+    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
     shutil.rmtree(
         DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
         ignore_errors=True,
@@ -209,20 +214,67 @@ def test_source_create(create_data_contacts_table):
 
     assert check_if_source_exists(TEST_SOURCE)
 
+    # Cleaning up after the test
+    engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
+        ignore_errors=True,
+    )
 
-def test_base_model_create():
 
-    create(TEST_SOURCE, TEST_TABLE_CONTACTS, project="postgres")
-    os.system(f"dbt run -m stg_{TEST_TABLE_CONTACTS}")
+def test_base_model_create(create_data_contacts_table):
 
-    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_CONTACTS)
+    assert not check_if_source_exists(TEST_SOURCE)
+    assert not check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
+
+    # Creating Source
+    with mock.patch.object(
+        builtins,
+        "input",
+        lambda: key.ENTER,
+    ):
+
+        create_source(TEST_SOURCE)
+
+    #  Creating base model
+    create(TEST_SOURCE, TEST_TABLE_CONTACT)
+    os.system(f"dbt run -m stg_{TEST_TABLE_CONTACT}")
+
+    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
+    assert check_if_source_exists(TEST_SOURCE)
+
+    # Cleaning up after the test
+    engine.execute(f"DROP VIEW IF EXISTS stg_{TEST_TABLE_CONTACT};")
+    engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
+        ignore_errors=True,
+    )
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_SOURCE),
+        ignore_errors=True,
+    )
 
 
-def test_source_add(add_data_accouts_table):
+def test_source_add(create_data_contacts_table):
 
-    assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNTS)
-    assert not check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_ACCOUNTS)
+    assert not check_if_source_exists(TEST_SOURCE)
+    assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
+    assert not check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
 
+    # Creating source
+    with mock.patch.object(
+        builtins,
+        "input",
+        lambda: key.ENTER,
+    ):
+
+        create_source(TEST_SOURCE)
+
+    # Adding table to database
+    add_data_accouts_table()
+
+    # Adding table to source
     with mock.patch.object(
         builtins,
         "input",
@@ -231,12 +283,25 @@ def test_source_add(add_data_accouts_table):
 
         add_source(
             TEST_SOURCE,
-            TEST_TABLE_ACCOUNTS,
+            TEST_TABLE_ACCOUNT,
             case_sensitive_cols=True,
         )
 
-    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNTS)
-    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_ACCOUNTS)
+    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
+    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
+    assert check_if_source_exists(TEST_SOURCE)
+
+    # Cleaning up after the test
+    engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_ACCOUNT};")
+    engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
+        ignore_errors=True,
+    )
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_SOURCE),
+        ignore_errors=True,
+    )
 
 
 # ----------------------------- START INTEGRA MODEL TESTING ---------------------------- #
@@ -250,20 +315,60 @@ def test_model_bootstrap():
 
     assert model_path.exists()
 
+    # Cleaning up after the test
+    model_path.unlink()
 
-def test_model_bootstrap_yaml():
 
+def test_model_bootstrap_yaml(create_data_contacts_table):
+
+    assert not check_if_source_exists(TEST_SOURCE)
+    assert not check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
     assert not model_yaml_path.exists()
 
+    # Creating Source
+    with mock.patch.object(
+        builtins,
+        "input",
+        lambda: key.ENTER,
+    ):
+
+        create_source(TEST_SOURCE)
+
+    # Creating base_model
+    create(TEST_SOURCE, TEST_TABLE_CONTACT)
+    os.system(f"dbt run -m stg_{TEST_TABLE_CONTACT}")
+
+    # Creating model
+    bootstrap(MODEL, MART, PROJECT)
+
     with open(model_path, "a") as f:
-        f.write(
-            "select * from {{ " + "ref( 'stg_" + TEST_TABLE_CONTACTS + "' )" + " }}"
-        )
+        f.write("select * from {{ " + "ref( 'stg_" + TEST_TABLE_CONTACT + "' )" + " }}")
 
     os.system(f"dbt run -m {MODEL}")
-    bootstrap_yaml(MODEL, MART, PROJECT, "test", "test", "qa")
 
-    assert model_path.exists()
+    # Creating model.yml file
+    bootstrap_yaml(
+        MODEL, MART, PROJECT, "test_technical_owner", "test_business_owner", "qa"
+    )
+
+    assert model_yaml_path.exists()
+
+    # Cleaning up after the test
+    engine.execute(f"DROP VIEW IF EXISTS {MODEL};")
+    engine.execute(f"DROP VIEW IF EXISTS stg_{TEST_TABLE_CONTACT};")
+    engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
+        ignore_errors=True,
+    )
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_SOURCE),
+        ignore_errors=True,
+    )
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "marts", MART),
+        ignore_errors=True,
+    )
 
 
 # --------------------------- END INTEGRA MODEL COMMAND TESTING --------------------------- #
@@ -282,8 +387,8 @@ def test_create_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
         overwrite=False,
         yaml_path=yaml_path,
         target="qa",
-        technical_owner="test",
-        business_owner="test",
+        technical_owner="test_technical_owner",
+        business_owner="test_business_owner",
     )
     assert registered is True
 
@@ -294,8 +399,34 @@ def test_create_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
     for seed in get_all_seeds(target="qa"):
         assert check_seed_in_yaml(seed, yaml_path=yaml_path)
 
+    # Cleaning up after the test
+    yaml_path.unlink()
+    if os.path.exists(
+        DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv")
+    ):
+        DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv").unlink()
+
+    engine.execute("DROP TABLE IF EXISTS average_salary_test;")
+
 
 def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
+
+    # check yaml does not exist
+    assert not yaml_path.is_file()
+
+    # create yaml with all seeds information
+    registered = register(
+        seed=None,
+        overwrite=False,
+        yaml_path=yaml_path,
+        target="qa",
+        technical_owner="test_technical_owner",
+        business_owner="test_business_owner",
+    )
+    assert registered is True
+
+    # check if yaml file exists
+    assert yaml_path.is_file()
 
     try:
         shutil.copyfile(
@@ -311,8 +442,8 @@ def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
         overwrite=False,
         yaml_path=yaml_path,
         target="qa",
-        technical_owner="test",
-        business_owner="test",
+        technical_owner="test_technical_owner",
+        business_owner="test_business_owner",
     )
     assert registered is True
 
@@ -320,9 +451,20 @@ def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
     for seed in get_all_seeds(target="qa"):
         assert check_seed_in_yaml(seed, yaml_path=yaml_path)
 
+    # Cleaning up after the test
+    if os.path.exists(
+        DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv")
+    ):
+        DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv").unlink()
+
+    if os.path.exists(DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv")):
+        DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv").unlink()
+
+    if os.path.exists(DEFAULT_SEED_SCHEMA_PATH):
+        DEFAULT_SEED_SCHEMA_PATH.unlink()
+
+    engine.execute("DROP TABLE IF EXISTS countries;")
+    engine.execute("DROP TABLE IF EXISTS average_salary_test;")
+
 
 # --------------------------- END INTEGRA SEED COMMAND TESTING --------------------------- #
-
-
-def test_clean_up(clean_up_project):
-    assert True
