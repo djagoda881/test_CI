@@ -11,12 +11,12 @@ import typer
 app = typer.Typer()
 
 
-def check_if_base_model_exists(source: str, table_name: str) -> bool:
+def check_if_base_model_exists(table_name: str) -> bool:
     sql_path = DBT_PROJECT_DIR.joinpath(
-        "models", BASE_MODELS_SCHEMA, source, (f"stg_{table_name}.sql")
+        "models", BASE_MODELS_SCHEMA, (f"stg_{table_name}.sql")
     )
     yml_path = DBT_PROJECT_DIR.joinpath(
-        "models", BASE_MODELS_SCHEMA, source, (f"stg_{table_name}.yml")
+        "models", BASE_MODELS_SCHEMA, (f"stg_{table_name}.yml")
     )
 
     both_files_exist = sql_path.exists() and yml_path.exists()
@@ -44,11 +44,11 @@ def create(
     Args:
         source (str): The name of the source schema.
         table_name (str): The name of the table to add.
-        project (str, optional): The name of dbt current project. Defaults to DBT_PROJECT_DIR.name variable.
+        project (str, optional): The name of current dbt project. Defaults to `DBT_PROJECT_DIR.name`.
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
-        force (bool, optional): Overwrites the existing source. Defaults to False.
+        force (bool, optional): Specifies whether the model is to be overwritten. Defaults to False.
     """
-    base_dir = DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA, source)
+    base_dir = DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA)
     yml_path = base_dir.joinpath(f"stg_{table_name}.yml")
     sql_path = base_dir.joinpath(f"stg_{table_name}.sql")
 
@@ -60,7 +60,7 @@ def create(
     source_fqn = f"{source}.{table_name}"
     source_fqn_fmt = f"[white]{source_fqn}[/white]"
 
-    base_model_exists = check_if_base_model_exists(source, table_name)
+    base_model_exists = check_if_base_model_exists(table_name)
     if base_model_exists:
         if force:
             operation = "overwriting"

@@ -48,18 +48,10 @@
     {% endif %}
 
     {% do seeds_yaml.append('    meta:' ) %}
-    {% if technical_owner %}
-        {% do seeds_yaml.append('      technical_owner: ' ~ technical_owner)%}
-    {% else %}
-        {% do seeds_yaml.append('      technical_owner: @Unassigned')%}
-    {% endif %}
-    {% if business_owner %}
-        {% do seeds_yaml.append('      business_owner: ' ~ business_owner)%}
-    {% else %}
-        {% do seeds_yaml.append('      business_owner: @Unassigned')%}        
-    {% endif %}
-
-
+    
+    {% do seeds_yaml.append('      technical_owner: ' ~ technical_owner)%}
+    {% do seeds_yaml.append('      business_owner: ' ~ business_owner)%}
+   
     {% if generate_columns %}
     {% do seeds_yaml.append('    columns:') %}
 

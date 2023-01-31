@@ -35,27 +35,22 @@ MART = "unit_test"
 PROJECT = "unit_test"
 MODEL = "test_model"
 
-nrows = 100
+NROWS = 100
 
-sql_path = DBT_PROJECT_DIR.joinpath(
-    "models", BASE_MODELS_SCHEMA, TEST_SOURCE, TEST_TABLE_CONTACT + ".sql"
-)
-yml_path = DBT_PROJECT_DIR.joinpath(
-    "models", BASE_MODELS_SCHEMA, TEST_SOURCE, TEST_TABLE_CONTACT + ".yml"
-)
-source_path = DBT_PROJECT_DIR.joinpath(
+SOURCE_PATH = DBT_PROJECT_DIR.joinpath(
     "models", "sources", TEST_SOURCE, TEST_SOURCE + ".yml"
 )
-model_path = DBT_PROJECT_DIR.joinpath(
+MODEL_PATH = DBT_PROJECT_DIR.joinpath(
     "models", "marts", MART, PROJECT, MODEL, MODEL + ".sql"
 )
-model_yaml_path = DBT_PROJECT_DIR.joinpath(
+MODEL_YAML_PATH = DBT_PROJECT_DIR.joinpath(
     "models", "marts", MART, PROJECT, MODEL, MODEL + ".yml"
 )
-
 DEFAULT_SEED_SCHEMA_PATH = DBT_PROJECT_DIR.joinpath(
     "seeds", "master_data", "schema.yml"
 )
+TEST_SEED_FILE_AVG = DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv")
+TEST_SEED_FILE_COUNTRIES = DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv")
 
 engine = create_engine("postgresql://user:password@postgres:5432/db")
 
@@ -64,7 +59,7 @@ engine = create_engine("postgresql://user:password@postgres:5432/db")
 def create_data_contacts_table():
     class Contact(BaseModel):
         Id: str = Field(default_factory=lambda: i)
-        AccountId: str = Field(default_factory=lambda: random.randint(1, nrows))
+        AccountId: str = Field(default_factory=lambda: random.randint(1, NROWS))
         FirstName: str = Field(default_factory=fake.first_name)
         LastName: str = Field(default_factory=fake.last_name)
         ContactEMail: str = Field(default_factory=fake.email)
@@ -77,7 +72,7 @@ def create_data_contacts_table():
 
     contacts = []
 
-    for i in range(1, nrows + 1):
+    for i in range(1, NROWS + 1):
         contacts.append(Contact(Id=i).dict(by_alias=True))
     contacts_df_pandas = pd.DataFrame(contacts)
 
@@ -101,7 +96,7 @@ def add_data_accouts_table():
 
     accounts = []
 
-    for i in range(1, nrows + 1):
+    for i in range(1, NROWS + 1):
         accounts.append(Account(id=i).dict(by_alias=True))
     accounts_df_pandas = pd.DataFrame(accounts)
 
@@ -120,16 +115,9 @@ def clean_up_project(request):
         engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
         engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_ACCOUNT};")
 
-        if os.path.exists(
-            DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv")
-        ):
-            DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv").unlink()
-
-        if os.path.exists(DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv")):
-            DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv").unlink()
-
-        if os.path.exists(DEFAULT_SEED_SCHEMA_PATH):
-            DEFAULT_SEED_SCHEMA_PATH.unlink()
+        TEST_SEED_FILE_AVG.unlink(missing_ok=True)
+        TEST_SEED_FILE_COUNTRIES.unlink(missing_ok=True)
+        DEFAULT_SEED_SCHEMA_PATH.unlink(missing_ok=True)
 
         shutil.rmtree(
             DBT_PROJECT_DIR.joinpath("models", "marts", MART),
@@ -142,11 +130,13 @@ def clean_up_project(request):
         )
 
         shutil.rmtree(
-            DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_SOURCE),
+            DBT_PROJECT_DIR.joinpath("models", "conformed"),
             ignore_errors=True,
         )
+        engine.dispose()
 
-    request.addfinalizer(cleanup)
+    yield
+    cleanup()
 
 
 # --------------------------- START INTEGRA COMMON COMMAND TESTING --------------------------- #
@@ -171,8 +161,8 @@ def test_check_if_source_exists():
 
     assert not check_if_source_exists(TEST_SOURCE)
 
-    source_path.parent.mkdir(parents=True, exist_ok=True)
-    source_path.touch()
+    SOURCE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    SOURCE_PATH.touch()
 
     assert check_if_source_exists(TEST_SOURCE)
 
@@ -185,13 +175,13 @@ def test_check_if_source_table_exists():
 
     assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
 
-    source_path.parent.mkdir(parents=True, exist_ok=True)
+    SOURCE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     source_yaml = {
         "version": 2,
         "sources": [{"name": TEST_SOURCE, "tables": [{"name": TEST_TABLE_CONTACT}]}],
     }
-    with open(source_path, "w") as f:
+    with open(SOURCE_PATH, "w") as f:
         yaml.dump(source_yaml, f)
 
     assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
@@ -204,6 +194,8 @@ def test_check_if_source_table_exists():
 def test_source_create(create_data_contacts_table):
 
     assert not check_if_source_exists(TEST_SOURCE)
+
+    # Creating Source
     with mock.patch.object(
         builtins,
         "input",
@@ -225,7 +217,7 @@ def test_source_create(create_data_contacts_table):
 def test_base_model_create(create_data_contacts_table):
 
     assert not check_if_source_exists(TEST_SOURCE)
-    assert not check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
+    assert not check_if_base_model_exists(TEST_TABLE_ACCOUNT)
 
     # Creating Source
     with mock.patch.object(
@@ -240,7 +232,7 @@ def test_base_model_create(create_data_contacts_table):
     create(TEST_SOURCE, TEST_TABLE_CONTACT)
     os.system(f"dbt run -m stg_{TEST_TABLE_CONTACT}")
 
-    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
+    assert check_if_base_model_exists(TEST_TABLE_CONTACT)
     assert check_if_source_exists(TEST_SOURCE)
 
     # Cleaning up after the test
@@ -251,7 +243,7 @@ def test_base_model_create(create_data_contacts_table):
         ignore_errors=True,
     )
     shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_SOURCE),
+        DBT_PROJECT_DIR.joinpath("models", "conformed"),
         ignore_errors=True,
     )
 
@@ -260,7 +252,7 @@ def test_source_add(create_data_contacts_table):
 
     assert not check_if_source_exists(TEST_SOURCE)
     assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
-    assert not check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
+    assert not check_if_base_model_exists(TEST_TABLE_ACCOUNT)
 
     # Creating source
     with mock.patch.object(
@@ -288,7 +280,7 @@ def test_source_add(create_data_contacts_table):
         )
 
     assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
-    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
+    assert check_if_base_model_exists(TEST_TABLE_ACCOUNT)
     assert check_if_source_exists(TEST_SOURCE)
 
     # Cleaning up after the test
@@ -299,7 +291,7 @@ def test_source_add(create_data_contacts_table):
         ignore_errors=True,
     )
     shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_SOURCE),
+        DBT_PROJECT_DIR.joinpath("models", "conformed"),
         ignore_errors=True,
     )
 
@@ -309,21 +301,21 @@ def test_source_add(create_data_contacts_table):
 
 def test_model_bootstrap():
 
-    assert not model_path.exists()
+    assert not MODEL_PATH.exists()
 
     bootstrap(MODEL, MART, PROJECT)
 
-    assert model_path.exists()
+    assert MODEL_PATH.exists()
 
     # Cleaning up after the test
-    model_path.unlink()
+    MODEL_PATH.unlink()
 
 
 def test_model_bootstrap_yaml(create_data_contacts_table):
 
     assert not check_if_source_exists(TEST_SOURCE)
-    assert not check_if_base_model_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
-    assert not model_yaml_path.exists()
+    assert not check_if_base_model_exists(TEST_TABLE_CONTACT)
+    assert not MODEL_YAML_PATH.exists()
 
     # Creating Source
     with mock.patch.object(
@@ -341,7 +333,7 @@ def test_model_bootstrap_yaml(create_data_contacts_table):
     # Creating model
     bootstrap(MODEL, MART, PROJECT)
 
-    with open(model_path, "a") as f:
+    with open(MODEL_PATH, "a") as f:
         f.write("select * from {{ " + "ref( 'stg_" + TEST_TABLE_CONTACT + "' )" + " }}")
 
     os.system(f"dbt run -m {MODEL}")
@@ -351,7 +343,7 @@ def test_model_bootstrap_yaml(create_data_contacts_table):
         MODEL, MART, PROJECT, "test_technical_owner", "test_business_owner", "qa"
     )
 
-    assert model_yaml_path.exists()
+    assert MODEL_YAML_PATH.exists()
 
     # Cleaning up after the test
     engine.execute(f"DROP VIEW IF EXISTS {MODEL};")
@@ -362,7 +354,7 @@ def test_model_bootstrap_yaml(create_data_contacts_table):
         ignore_errors=True,
     )
     shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_SOURCE),
+        DBT_PROJECT_DIR.joinpath("models", "conformed"),
         ignore_errors=True,
     )
     shutil.rmtree(
@@ -401,10 +393,7 @@ def test_create_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
 
     # Cleaning up after the test
     yaml_path.unlink()
-    if os.path.exists(
-        DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv")
-    ):
-        DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv").unlink()
+    TEST_SEED_FILE_AVG.unlink(missing_ok=True)
 
     engine.execute("DROP TABLE IF EXISTS average_salary_test;")
 
@@ -452,16 +441,9 @@ def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
         assert check_seed_in_yaml(seed, yaml_path=yaml_path)
 
     # Cleaning up after the test
-    if os.path.exists(
-        DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv")
-    ):
-        DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv").unlink()
-
-    if os.path.exists(DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv")):
-        DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv").unlink()
-
-    if os.path.exists(DEFAULT_SEED_SCHEMA_PATH):
-        DEFAULT_SEED_SCHEMA_PATH.unlink()
+    TEST_SEED_FILE_AVG.unlink(missing_ok=True)
+    TEST_SEED_FILE_COUNTRIES.unlink(missing_ok=True)
+    DEFAULT_SEED_SCHEMA_PATH.unlink(missing_ok=True)
 
     engine.execute("DROP TABLE IF EXISTS countries;")
     engine.execute("DROP TABLE IF EXISTS average_salary_test;")

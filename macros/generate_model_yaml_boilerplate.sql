@@ -61,9 +61,10 @@ Args:
     include_sla (bool, optional): Whether to include the SLA meta key.
     include_pii_tag (bool, optional): Whether to include the PII tag.
     This may be useful when PII columns are already masked in the base table.
-    case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
-    base_model (bool, optional):  Determines whether model generation is performed for base_model. 
-    In case of yml file generation for base model, prefix stg is needed before the model name. Defaults to False.
+    case_sensitive_cols (bool, optional): Determine whether the database type is case-sensitive, 
+    if it is case-sensitive column names will be allowed to contain uppercase letters. Defaults to True.
+    base_model (bool, optional):  Determines whether model generation is performed for a base_model. 
+    In case of yml file generation for base model, prefix `stg` is needed before the model name. Defaults to False.
 #}
 
 {{ log("Generaling model YAML for model '" ~ model_name ~ "'...") }}

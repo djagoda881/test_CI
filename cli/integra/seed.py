@@ -18,23 +18,20 @@ DEFAULT_SEED_SCHEMA_PATH = DBT_PROJECT_DIR.joinpath(
 )
 
 
-def _excel_to_csv(
-    filename: str = None, yaml_path: str = DEFAULT_SEED_SCHEMA_PATH
+def get_excel_files(
+    filename: str = None, seed_files_path: str = DEFAULT_SEED_SCHEMA_PATH.parent
 ) -> None:
 
     """
-    Creates a csv file copying an excel file
+    Downloads all files not saved in .csv format from master_data for conversion to csv.
 
     Args:
-        filename (str, optional): The name of the file to transform. Defaults to None.
-        yaml_path (str, optional): The path to the file with seed YAML schema. Defaults to 'DEFAULT_SEED_SCHEMA_PATH' variable.
+        filename (str, optional): The name of the file to be converted, if nothing is specified, all files will be included. Defaults to None.
+        seed_files_path (str, optional): Path to master data folder containing all seeds. Defaults to `DEFAULT_SEED_SCHEMA_PATH.parent`.
 
     """
 
-    # Where all seeds are located
-    seeds_dir = yaml_path.parent
-
-    all_files_under_seeds_dir = os.listdir(seeds_dir)
+    all_files_under_seeds_dir = os.listdir(seed_files_path)
 
     supported_extensions = (".xls", ".xlsx", ".xlsm", ".xlsb", ".odf", ".ods", ".odt")
 
@@ -53,32 +50,41 @@ def _excel_to_csv(
     for excel_file in excel_files:
         filename_without_file_extension = excel_file.split(".")[0]
         filename_with_csv_file_extension = (
-            filename_without_file_extension.replace(" ", "_").lower() + ".csv"
+            filename_without_file_extension.replace(" ", "_") + ".csv"
         )
 
-        # Only create csv if it does not already exist a csv with the same filename as the excel file
         if filename_with_csv_file_extension not in all_files_under_seeds_dir:
+            _excel_to_csv(seed_files_path, excel_file, filename_with_csv_file_extension)
 
-            # Read excel, create df, transform df to csv and save
-            df = pd.read_excel(os.path.join(seeds_dir, excel_file))
 
-            df.columns = [
-                f"{column.strip().replace(' ', '_')}" for column in df.columns
-            ]
-            # Replacing invalid character(s) among " ,;{}()\n\t=" as these are forbidden in column names by Databricks
-            df.columns = df.columns.str.replace("[,;{}()\n\t=]", "", regex=True)
+def _excel_to_csv(seeds_dir, excel_file, filename_with_csv_file_extension) -> None:
 
-            df.to_csv(
-                os.path.join(seeds_dir, filename_with_csv_file_extension), index=False
-            )
-            print(
-                f"Created [white]{filename_with_csv_file_extension}[/white] as a copy of [white]{excel_file}[/white] [green]successfully[/green]."
-            )
+    """
+    Creates a csv file from the specified excel file
+
+    Args:
+        seeds_dir (str): Path to master data folder containing all seeds.
+        excel_file (str): Name of the file to be converted.
+        filename_with_csv_file_extension (str): The name to have for the csv file.
+
+    """
+
+    # Read excel, create df, transform df to csv and save
+    df = pd.read_excel(os.path.join(seeds_dir, excel_file))
+
+    df.columns = [f"{column.strip().replace(' ', '_')}" for column in df.columns]
+    # Replacing invalid character(s) among " ,;{}()\n\t=" as these are forbidden in column names by Databricks
+    df.columns = df.columns.str.replace("[,;{}()\n\t=]", "", regex=True)
+
+    df.to_csv(os.path.join(seeds_dir, filename_with_csv_file_extension), index=False)
+    print(
+        f"Created [white]{excel_file}[/white] as a copy of [white]{filename_with_csv_file_extension}[/white] [green]successfully[/green]."
+    )
 
 
 def get_all_seeds(target: str = "qa") -> List[str]:
     """
-    Runs 'dbt --resource-type seeds' to retrieve all seed in project.
+    Runs 'dbt --resource-type seeds' to retrieve all seeds in project.
 
     Args:
         target (str, optional) The target to work with, options are ('qa', 'prod'). Defaults to qa.
@@ -220,7 +226,7 @@ def register(
     if isinstance(yaml_path, str):
         yaml_path = Path(yaml_path)
 
-    _excel_to_csv(filename=seed, yaml_path=yaml_path)
+    get_excel_files(filename=seed)
 
     # If no seed was passed, register all seeds
     if not seed:
