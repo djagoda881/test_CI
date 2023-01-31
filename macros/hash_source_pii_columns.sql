@@ -1,4 +1,4 @@
-{% macro hash_source_pii_columns(project='lakehouse', schema="raw", table=None) -%}
+{% macro hash_source_pii_columns(project, schema, table=None) -%}
 
     {%- set pii_columns = get_source_pii_columns(project=project, schema=schema, table=table) -%}
 

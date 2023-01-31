@@ -12,7 +12,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from pathlib import Path
 
-from integra.base_model import check_if_base_model_exists
+from integra.base_model import check_if_base_model_exists, create
 from integra.model import bootstrap, bootstrap_yaml
 from integra.common import DBT_PROJECT_DIR, BASE_MODELS_SCHEMA, run_in_dbt_project
 from integra.source import check_if_source_exists, check_if_source_table_exists
@@ -22,11 +22,12 @@ from integra.seed import (
     check_seed_in_yaml,
     get_all_seeds,
 )
+from sqlalchemy import create_engine
 
 fake = Faker()
 
-TEST_SOURCE = "raw_t"
-TEST_TABLE = "test_table"
+TEST_SOURCE = "public"
+TEST_TABLE = "test_table_contacts"
 MART = "unit_test"
 PROJECT = "unit_test"
 MODEL = "test_model"
@@ -44,6 +45,9 @@ source_path = DBT_PROJECT_DIR.joinpath(
 )
 model_path = DBT_PROJECT_DIR.joinpath(
     "models", "marts", MART, PROJECT, MODEL, MODEL + ".sql"
+)
+model_yaml_path = DBT_PROJECT_DIR.joinpath(
+    "models", "marts", MART, PROJECT, MODEL, MODEL + ".yml"
 )
 
 
@@ -85,9 +89,15 @@ def create_sqllite_source():
         accounts.append(Account(Id=i).dict(by_alias=True))
     accounts_df_pandas = pd.DataFrame(accounts)
 
-    conn = sqlite3.connect("test_database")
-    contacts_df_pandas.to_sql("contacts", conn, if_exists="replace", index=False)
-    accounts_df_pandas.to_sql("accounts", conn, if_exists="replace", index=False)
+    engine = create_engine("postgresql://user:password@localhost:5432/db")
+
+    accounts_df_pandas.to_sql(
+        "test_table_accounts", engine, if_exists="replace", index=False
+    )
+
+    contacts_df_pandas.to_sql(
+        "test_table_contacts", engine, if_exists="replace", index=False
+    )
 
 
 # --------------------------- START INTEGRA COMMON COMMAND TESTING --------------------------- #
@@ -108,32 +118,25 @@ def test_run_in_dbt_project():
 # ------------------------------- START INTEGRA SOURCE TESTING ----------------------------- #
 
 
-def test_check_if_base_model_exists():
+def test_check_if_source_exists():
 
-    assert not check_if_base_model_exists(TEST_SOURCE, TEST_TABLE)
+    assert not check_if_source_exists(TEST_SOURCE)
 
-    sql_path.parent.mkdir(parents=True, exist_ok=True)
-    sql_path.touch()
-    yml_path.touch()
+    source_path.parent.mkdir(parents=True, exist_ok=True)
+    source_path.touch()
 
-    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE)
+    assert check_if_source_exists(TEST_SOURCE)
 
-    sql_path.unlink()
-    with pytest.raises(AssertionError):
-        check_if_base_model_exists(TEST_SOURCE, TEST_TABLE)
-    sql_path.touch()
-
-    yml_path.unlink()
-    with pytest.raises(AssertionError):
-        check_if_base_model_exists(TEST_SOURCE, TEST_TABLE)
-
-    sql_path.unlink()
-    sql_path.parent.rmdir()
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE), ignore_errors=True
+    )
 
 
 def test_check_if_source_table_exists():
 
     assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE)
+
+    source_path.parent.mkdir(parents=True, exist_ok=True)
 
     source_yaml = {
         "version": 2,
@@ -143,8 +146,10 @@ def test_check_if_source_table_exists():
         yaml.dump(source_yaml, f)
 
     assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE)
-
-    source_path.unlink()
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
+        ignore_errors=True,
+    )
 
 
 def test_source_create():
@@ -155,21 +160,16 @@ def test_source_create():
 
     assert check_if_source_exists(TEST_SOURCE)
 
-    source_path.unlink()
-    source_path.parent.rmdir()
+
+def test_base_model_create():
+
+    create(TEST_SOURCE, TEST_TABLE)
+    os.system(f"dbt run -m {TEST_TABLE}")
+
+    assert check_if_base_model_exists(TEST_SOURCE, TEST_TABLE)
 
 
-def test_check_if_source_exists():
-
-    assert not check_if_source_exists(TEST_SOURCE)
-
-    source_path.parent.mkdir(parents=True, exist_ok=True)
-    source_path.touch()
-
-    assert check_if_source_exists(TEST_SOURCE)
-
-    source_path.unlink()
-
+# integra source add do dodania
 
 # ----------------------------- START INTEGRA MODEL TESTING ---------------------------- #
 
@@ -179,29 +179,36 @@ def test_model_bootstrap():
     assert not model_path.exists()
 
     bootstrap(MODEL, MART, PROJECT)
-    assert model_path.exists()
 
-    model_path.unlink()
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "marts", MART),
-        ignore_errors=True,
-    )
+    assert model_path.exists()
 
 
 def test_model_bootstrap_yaml():
 
-    assert not model_path.exists()
+    assert not model_yaml_path.exists()
 
-    bootstrap(MODEL, MART, PROJECT)
+    with open(model_path, "a") as f:
+        f.write("select * from {{ " + "ref( '" + MODEL + "' )" + " }}")
+
+    os.system(f"dbt run -m {MODEL}")
+    bootstrap_yaml(MODEL, MART, PROJECT, "test", "test", "qa")
+
     assert model_path.exists()
 
-    model_path.unlink()
     shutil.rmtree(
         DBT_PROJECT_DIR.joinpath("models", "marts", MART),
         ignore_errors=True,
     )
 
-    bootstrap_yaml(MODEL, MART, PROJECT, "ent_ext", "ent_ext")
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
+        ignore_errors=True,
+    )
+
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "conformed", TEST_TABLE),
+        ignore_errors=True,
+    )
 
 
 # --------------------------- END INTEGRA MODEL COMMAND TESTING --------------------------- #
