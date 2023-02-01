@@ -12,11 +12,10 @@ from getkey import key
 from faker import Faker
 from datetime import datetime
 from pydantic import BaseModel, Field
-from pathlib import Path
 
 from integra.base_model import check_if_base_model_exists, create
 from integra.model import bootstrap, bootstrap_yaml
-from integra.common import DBT_PROJECT_DIR, BASE_MODELS_SCHEMA, run_in_dbt_project
+from integra.common import DBT_PROJECT_DIR, run_in_dbt_project
 from integra.source import check_if_source_exists, check_if_source_table_exists
 from integra.source import create as create_source, add as add_source
 from integra.seed import register
@@ -24,13 +23,15 @@ from integra.seed import (
     check_seed_in_yaml,
     get_all_seeds,
 )
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 
 fake = Faker()
 
 TEST_SOURCE = "public"
 TEST_TABLE_CONTACT = "test_table_contact"
 TEST_TABLE_ACCOUNT = "test_table_account"
+TEST_SEED_AVG_NAME = "average_salary_test"
+TEST_SEED_COUNTRIES_NAME = "countries"
 MART = "unit_test"
 PROJECT = "unit_test"
 MODEL = "test_model"
@@ -49,8 +50,12 @@ MODEL_YAML_PATH = DBT_PROJECT_DIR.joinpath(
 DEFAULT_SEED_SCHEMA_PATH = DBT_PROJECT_DIR.joinpath(
     "seeds", "master_data", "schema.yml"
 )
-TEST_SEED_FILE_AVG = DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("average_salary_test.csv")
-TEST_SEED_FILE_COUNTRIES = DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv")
+TEST_SEED_AVG_PATH = DEFAULT_SEED_SCHEMA_PATH.parent.joinpath(
+    f"{TEST_SEED_AVG_NAME}.csv"
+)
+TEST_SEED_COUNTRIES_PATH = DEFAULT_SEED_SCHEMA_PATH.parent.joinpath(
+    f"{TEST_SEED_COUNTRIES_NAME}.csv"
+)
 
 engine = create_engine("postgresql://user:password@postgres:5432/db")
 
@@ -108,15 +113,15 @@ def add_data_accouts_table():
 @pytest.fixture(scope="session", autouse=True)
 def clean_up_project(request):
     def cleanup():
-        engine.execute("DROP TABLE IF EXISTS countries;")
-        engine.execute("DROP TABLE IF EXISTS average_salary_test;")
+        engine.execute(f"DROP TABLE IF EXISTS {TEST_SEED_COUNTRIES_NAME};")
+        engine.execute(f"DROP TABLE IF EXISTS {TEST_SEED_AVG_NAME};")
         engine.execute(f"DROP VIEW IF EXISTS {MODEL};")
         engine.execute(f"DROP VIEW IF EXISTS stg_{TEST_TABLE_CONTACT};")
         engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
         engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_ACCOUNT};")
 
-        TEST_SEED_FILE_AVG.unlink(missing_ok=True)
-        TEST_SEED_FILE_COUNTRIES.unlink(missing_ok=True)
+        TEST_SEED_AVG_PATH.unlink(missing_ok=True)
+        TEST_SEED_COUNTRIES_PATH.unlink(missing_ok=True)
         DEFAULT_SEED_SCHEMA_PATH.unlink(missing_ok=True)
 
         shutil.rmtree(
@@ -393,9 +398,9 @@ def test_create_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
 
     # Cleaning up after the test
     yaml_path.unlink()
-    TEST_SEED_FILE_AVG.unlink(missing_ok=True)
+    TEST_SEED_AVG_PATH.unlink(missing_ok=True)
 
-    engine.execute("DROP TABLE IF EXISTS average_salary_test;")
+    engine.execute(f"DROP TABLE IF EXISTS {TEST_SEED_AVG_NAME};")
 
 
 def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
@@ -420,7 +425,7 @@ def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
     try:
         shutil.copyfile(
             DBT_PROJECT_DIR.joinpath("countries_example.csv"),
-            DEFAULT_SEED_SCHEMA_PATH.parent.joinpath("countries.csv"),
+            DEFAULT_SEED_SCHEMA_PATH.parent.joinpath(f"{TEST_SEED_COUNTRIES_NAME}.csv"),
         )
     except:
         assert False, "The file was not copied"
@@ -441,12 +446,12 @@ def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
         assert check_seed_in_yaml(seed, yaml_path=yaml_path)
 
     # Cleaning up after the test
-    TEST_SEED_FILE_AVG.unlink(missing_ok=True)
-    TEST_SEED_FILE_COUNTRIES.unlink(missing_ok=True)
+    TEST_SEED_AVG_PATH.unlink(missing_ok=True)
+    TEST_SEED_COUNTRIES_PATH.unlink(missing_ok=True)
     DEFAULT_SEED_SCHEMA_PATH.unlink(missing_ok=True)
 
-    engine.execute("DROP TABLE IF EXISTS countries;")
-    engine.execute("DROP TABLE IF EXISTS average_salary_test;")
+    engine.execute(f"DROP TABLE IF EXISTS {TEST_SEED_COUNTRIES_NAME};")
+    engine.execute(f"DROP TABLE IF EXISTS {TEST_SEED_AVG_NAME};")
 
 
 # --------------------------- END INTEGRA SEED COMMAND TESTING --------------------------- #
