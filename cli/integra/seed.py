@@ -54,37 +54,39 @@ def get_excel_files(
         )
 
         if filename_with_csv_file_extension not in all_files_under_seeds_dir:
-            _excel_to_csv(seed_files_path, excel_file, filename_with_csv_file_extension)
+            _excel_to_csv(excel_file, filename_with_csv_file_extension)
 
 
-def _excel_to_csv(seeds_dir, excel_file, filename_with_csv_file_extension) -> None:
+def _excel_to_csv(excel_file, cvs_file) -> None:
 
     """
     Creates a csv file from the specified excel file
 
     Args:
-        seeds_dir (str): Path to master data folder containing all seeds.
         excel_file (str): Name of the file to be converted.
-        filename_with_csv_file_extension (str): The name to have for the csv file.
+        cvs_file (str): The name to have for the csv file.
 
     """
 
     # Read excel, create df, transform df to csv and save
-    df = pd.read_excel(os.path.join(seeds_dir, excel_file))
+    df = pd.read_excel(os.path.join(DEFAULT_SEED_SCHEMA_PATH.parent, excel_file))
 
     df.columns = [f"{column.strip().replace(' ', '_')}" for column in df.columns]
     # Replacing invalid character(s) among " ,;{}()\n\t=" as these are forbidden in column names by Databricks
     df.columns = df.columns.str.replace("[,;{}()\n\t=]", "", regex=True)
 
-    df.to_csv(os.path.join(seeds_dir, filename_with_csv_file_extension), index=False)
+    df.to_csv(
+        os.path.join(DEFAULT_SEED_SCHEMA_PATH.parent, cvs_file),
+        index=False,
+    )
     print(
-        f"Created [white]{excel_file}[/white] as a copy of [white]{filename_with_csv_file_extension}[/white] [green]successfully[/green]."
+        f"Created [white]{excel_file}[/white] as a copy of [white]{cvs_file}[/white] [green]successfully[/green]."
     )
 
 
 def get_all_seeds(target: str = "qa") -> List[str]:
     """
-    Runs 'dbt ls --resource-type seed' to retrieve all seeds in project.
+    Runs 'dbt --resource-type seeds' to retrieve all seeds in project.
 
     Args:
         target (str, optional) The target to work with, options are ('qa', 'prod'). Defaults to qa.
