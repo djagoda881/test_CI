@@ -54,33 +54,41 @@ def get_excel_files(
         )
 
         if filename_with_csv_file_extension not in all_files_under_seeds_dir:
-            _excel_to_csv(excel_file, filename_with_csv_file_extension)
+            _excel_to_csv(
+                os.path.join(DEFAULT_SEED_SCHEMA_PATH.parent, excel_file),
+                os.path.join(
+                    DEFAULT_SEED_SCHEMA_PATH.parent, filename_with_csv_file_extension
+                ),
+            )
 
 
-def _excel_to_csv(excel_file, cvs_file) -> None:
+def _excel_to_csv(excel_file_path, cvs_file_path) -> None:
 
     """
     Creates a csv file from the specified excel file
 
     Args:
-        excel_file (str): Name of the file to be converted.
-        cvs_file (str): The name to have for the csv file.
+        excel_file_path (str): The path to the excel file to be converted.
+        cvs_file_path (str): The path where the created csv file is to be saved.
 
     """
 
     # Read excel, create df, transform df to csv and save
-    df = pd.read_excel(os.path.join(DEFAULT_SEED_SCHEMA_PATH.parent, excel_file))
+    df = pd.read_excel(excel_file_path)
 
     df.columns = [f"{column.strip().replace(' ', '_')}" for column in df.columns]
     # Replacing invalid character(s) among " ,;{}()\n\t=" as these are forbidden in column names by Databricks
     df.columns = df.columns.str.replace("[,;{}()\n\t=]", "", regex=True)
 
     df.to_csv(
-        os.path.join(DEFAULT_SEED_SCHEMA_PATH.parent, cvs_file),
+        cvs_file_path,
         index=False,
     )
+    csv_file = os.path.basename(cvs_file_path).split("/")[-1]
+    excel_file = os.path.basename(excel_file_path).split("/")[-1]
+
     print(
-        f"Created [white]{excel_file}[/white] as a copy of [white]{cvs_file}[/white] [green]successfully[/green]."
+        f"Created [white]{csv_file}[/white] as a copy of [white]{excel_file}[/white] [green]successfully[/green]."
     )
 
 
