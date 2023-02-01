@@ -31,7 +31,7 @@ TEST_SOURCE = "public"
 TEST_TABLE_CONTACT = "test_table_contact"
 TEST_TABLE_ACCOUNT = "test_table_account"
 TEST_SEED_AVG_NAME = "average_salary_test"
-TEST_SEED_COUNTRIES_NAME = "countries"
+TEST_SEED_COUNTRIES_NAME = "countries_example"
 MART = "unit_test"
 PROJECT = "unit_test"
 MODEL = "test_model"
@@ -424,7 +424,7 @@ def test_update_all(yaml_path: str = DEFAULT_SEED_SCHEMA_PATH):
 
     try:
         shutil.copyfile(
-            DBT_PROJECT_DIR.joinpath("countries_example.csv"),
+            DBT_PROJECT_DIR.joinpath(f"{TEST_SEED_COUNTRIES_NAME}.csv"),
             DEFAULT_SEED_SCHEMA_PATH.parent.joinpath(f"{TEST_SEED_COUNTRIES_NAME}.csv"),
         )
     except:
