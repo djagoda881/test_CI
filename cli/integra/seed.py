@@ -86,7 +86,7 @@ def _excel_to_csv(excel_file, cvs_file) -> None:
 
 def get_all_seeds(target: str = "qa") -> List[str]:
     """
-    Runs 'dbt --resource-type seeds' to retrieve all seeds in project.
+    Runs 'dbt ls --resource-type seed' to retrieve all seeds in project.
 
     Args:
         target (str, optional) The target to work with, options are ('qa', 'prod'). Defaults to qa.
