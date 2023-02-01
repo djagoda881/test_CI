@@ -13,10 +13,10 @@ app = typer.Typer()
 
 def check_if_base_model_exists(table_name: str) -> bool:
     sql_path = DBT_PROJECT_DIR.joinpath(
-        "models", BASE_MODELS_SCHEMA, (f"stg_{table_name}.sql")
+        "models", BASE_MODELS_SCHEMA, (f"stg_{table_name}"), (f"stg_{table_name}.sql")
     )
     yml_path = DBT_PROJECT_DIR.joinpath(
-        "models", BASE_MODELS_SCHEMA, (f"stg_{table_name}.yml")
+        "models", BASE_MODELS_SCHEMA, (f"stg_{table_name}"), (f"stg_{table_name}.yml")
     )
 
     both_files_exist = sql_path.exists() and yml_path.exists()
@@ -48,7 +48,9 @@ def create(
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
         force (bool, optional): Specifies whether the model is to be overwritten. Defaults to False.
     """
-    base_dir = DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA)
+    base_dir = DBT_PROJECT_DIR.joinpath(
+        "models", BASE_MODELS_SCHEMA, (f"stg_{table_name}")
+    )
     yml_path = base_dir.joinpath(f"stg_{table_name}.yml")
     sql_path = base_dir.joinpath(f"stg_{table_name}.sql")
 
