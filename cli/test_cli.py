@@ -230,7 +230,7 @@ def test_source_create(create_data_contacts_table):
 def test_base_model_create(create_data_contacts_table):
 
     assert not check_if_source_exists(TEST_SOURCE)
-    assert not check_if_base_model_exists(TEST_TABLE_ACCOUNT)
+    assert not check_if_base_model_exists(TEST_TABLE_ACCOUNT_BASE_MODEL)
 
     # Creating Source
     with mock.patch.object(
@@ -241,7 +241,7 @@ def test_base_model_create(create_data_contacts_table):
 
         create_source(TEST_SOURCE)
 
-    assert check_if_base_model_exists(TEST_TABLE_CONTACT)
+    assert check_if_base_model_exists(TEST_TABLE_CONTACT_BASE_MODEL)
     assert check_if_source_exists(TEST_SOURCE)
 
     # Cleaning up after the test
@@ -261,7 +261,7 @@ def test_source_add(create_data_contacts_table):
 
     assert not check_if_source_exists(TEST_SOURCE)
     assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
-    assert not check_if_base_model_exists(TEST_TABLE_ACCOUNT)
+    assert not check_if_base_model_exists(TEST_TABLE_ACCOUNT_BASE_MODEL)
 
     # Creating source
     with mock.patch.object(
@@ -289,7 +289,7 @@ def test_source_add(create_data_contacts_table):
         )
 
     assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
-    assert check_if_base_model_exists(TEST_TABLE_ACCOUNT)
+    assert check_if_base_model_exists(TEST_TABLE_ACCOUNT_BASE_MODEL)
     assert check_if_source_exists(TEST_SOURCE)
 
     # Cleaning up after the test
@@ -325,7 +325,7 @@ def test_model_bootstrap():
 def test_model_bootstrap_yaml(create_data_contacts_table):
 
     assert not check_if_source_exists(TEST_SOURCE)
-    assert not check_if_base_model_exists(TEST_TABLE_CONTACT)
+    assert not check_if_base_model_exists(TEST_TABLE_CONTACT_BASE_MODEL)
     assert not MODEL_YAML_PATH.exists()
 
     # Creating Source

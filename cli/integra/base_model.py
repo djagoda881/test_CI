@@ -11,18 +11,18 @@ import typer
 app = typer.Typer()
 
 
-def check_if_base_model_exists(table_name: str) -> bool:
+def check_if_base_model_exists(base_model_name: str) -> bool:
     sql_path = DBT_PROJECT_DIR.joinpath(
-        "models", BASE_MODELS_SCHEMA, (f"stg_{table_name}"), (f"stg_{table_name}.sql")
+        "models", BASE_MODELS_SCHEMA, base_model_name, (f"{base_model_name}.sql")
     )
     yml_path = DBT_PROJECT_DIR.joinpath(
-        "models", BASE_MODELS_SCHEMA, (f"stg_{table_name}"), (f"stg_{table_name}.yml")
+        "models", BASE_MODELS_SCHEMA, base_model_name, (f"{base_model_name}.yml")
     )
 
     both_files_exist = sql_path.exists() and yml_path.exists()
     none_files_exist = not sql_path.exists() and not yml_path.exists()
 
-    fqn = f"[blue]{BASE_MODELS_SCHEMA}.{table_name}[/blue]"
+    fqn = f"[blue]{BASE_MODELS_SCHEMA}.{base_model_name}[/blue]"
     msg = f"SQL or YML file for the base model {fqn} is missing.\nPlease remove the remaining file."
     assert both_files_exist or none_files_exist, msg
 
