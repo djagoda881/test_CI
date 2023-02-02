@@ -51,6 +51,7 @@ def create(
     case_sensitive_cols: bool = True,
     force: bool = typer.Option(False, "--force", "-f"),
     no_profile: bool = typer.Option(False, "--no-profile", "-np"),
+    project: str = DBT_PROJECT_DIR.name,
 ):
     """
     Adds a new source with all existing tables in it.
@@ -60,6 +61,7 @@ def create(
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
         force (bool, optional): Overwrites the existing source. Defaults to False.
         no_profile (bool, optional): Whether to perform table profiling. Defaults to False.
+        project (str): The name of current dbt project. Defaults to DBT_PROJECT_DIR.name variable.
 
     Returns:
         bool: Whether the operation was successful.
@@ -133,6 +135,10 @@ def create(
     operation_past_tense = operation_past_tenses[operation]
     print(f"Source [blue]{source}[/blue] has been {operation_past_tense} successfully.")
 
+    for table in source_tables:
+
+        create_base_model(source, table, project, case_sensitive_cols)
+
     return True
 
 
@@ -177,7 +183,6 @@ def add(
     source_path = base_dir.joinpath(source + ".yml")
     fqn = f"{source}.{table_name}"
     fqn_fmt = f"[white]{source}.{table_name}[/white]"
-    fqn_fmt_visible = f"[blue]{source}.{table_name}[/blue]"
 
     if check_if_source_table_exists(source=source, table_name=table_name):
         # TODO: change to --force (check if dbt can actually overwrite a single table)
@@ -244,15 +249,7 @@ def add(
     )
     Prompt.ask("Press [green]ENTER[/green] to continue")
 
-    base_model = table_name
-    base_model_fqn = f"{BASE_MODELS_SCHEMA}.{base_model}"
-
-    create_base_model(source, base_model, project, case_sensitive_cols)
-    call_shell(f"dbt -q run --select {base_model}")
-
-    print(f"Base model {base_model_fqn} has been materialized successfully.")
-
-    print(f"\nSource {fqn_fmt_visible} has been added [green]successfully[/green].")
+    create_base_model(source, table_name, project, case_sensitive_cols)
 
     return True
 

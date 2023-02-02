@@ -29,7 +29,9 @@ fake = Faker()
 
 TEST_SOURCE = "public"
 TEST_TABLE_CONTACT = "test_table_contact"
+TEST_TABLE_CONTACT_BASE_MODEL = "stg_test_table_contact"
 TEST_TABLE_ACCOUNT = "test_table_account"
+TEST_TABLE_ACCOUNT_BASE_MODEL = "stg_test_table_account"
 TEST_SEED_AVG_NAME = "average_salary_test"
 TEST_SEED_COUNTRIES_NAME = "countries_example"
 MART = "unit_test"
@@ -116,7 +118,8 @@ def clean_up_project(request):
         engine.execute(f"DROP TABLE IF EXISTS {TEST_SEED_COUNTRIES_NAME};")
         engine.execute(f"DROP TABLE IF EXISTS {TEST_SEED_AVG_NAME};")
         engine.execute(f"DROP VIEW IF EXISTS {MODEL};")
-        engine.execute(f"DROP VIEW IF EXISTS stg_{TEST_TABLE_CONTACT};")
+        engine.execute(f"DROP VIEW IF EXISTS {TEST_TABLE_ACCOUNT_BASE_MODEL};")
+        engine.execute(f"DROP VIEW IF EXISTS {TEST_TABLE_CONTACT_BASE_MODEL};")
         engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
         engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_ACCOUNT};")
 
@@ -212,9 +215,14 @@ def test_source_create(create_data_contacts_table):
     assert check_if_source_exists(TEST_SOURCE)
 
     # Cleaning up after the test
+    engine.execute(f"DROP VIEW IF EXISTS {TEST_TABLE_CONTACT_BASE_MODEL};")
     engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
     shutil.rmtree(
         DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
+        ignore_errors=True,
+    )
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "conformed"),
         ignore_errors=True,
     )
 
@@ -233,15 +241,11 @@ def test_base_model_create(create_data_contacts_table):
 
         create_source(TEST_SOURCE)
 
-    #  Creating base model
-    create(TEST_SOURCE, TEST_TABLE_CONTACT)
-    os.system(f"dbt run -m stg_{TEST_TABLE_CONTACT}")
-
     assert check_if_base_model_exists(TEST_TABLE_CONTACT)
     assert check_if_source_exists(TEST_SOURCE)
 
     # Cleaning up after the test
-    engine.execute(f"DROP VIEW IF EXISTS stg_{TEST_TABLE_CONTACT};")
+    engine.execute(f"DROP VIEW IF EXISTS {TEST_TABLE_CONTACT_BASE_MODEL};")
     engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
     shutil.rmtree(
         DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
@@ -289,6 +293,8 @@ def test_source_add(create_data_contacts_table):
     assert check_if_source_exists(TEST_SOURCE)
 
     # Cleaning up after the test
+    engine.execute(f"DROP VIEW IF EXISTS {TEST_TABLE_ACCOUNT_BASE_MODEL};")
+    engine.execute(f"DROP VIEW IF EXISTS {TEST_TABLE_CONTACT_BASE_MODEL};")
     engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_ACCOUNT};")
     engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
     shutil.rmtree(
@@ -331,10 +337,6 @@ def test_model_bootstrap_yaml(create_data_contacts_table):
 
         create_source(TEST_SOURCE)
 
-    # Creating base_model
-    create(TEST_SOURCE, TEST_TABLE_CONTACT)
-    os.system(f"dbt run -m stg_{TEST_TABLE_CONTACT}")
-
     # Creating model
     bootstrap(MODEL, MART, PROJECT)
 
@@ -352,7 +354,7 @@ def test_model_bootstrap_yaml(create_data_contacts_table):
 
     # Cleaning up after the test
     engine.execute(f"DROP VIEW IF EXISTS {MODEL};")
-    engine.execute(f"DROP VIEW IF EXISTS stg_{TEST_TABLE_CONTACT};")
+    engine.execute(f"DROP VIEW IF EXISTS {TEST_TABLE_CONTACT_BASE_MODEL};")
     engine.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")
     shutil.rmtree(
         DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),

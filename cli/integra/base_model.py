@@ -48,21 +48,22 @@ def create(
         case_sensitive_cols (bool, optional): Determine if a given database type is case-sensitive. Defaults to True.
         force (bool, optional): Specifies whether the model is to be overwritten. Defaults to False.
     """
-    base_dir = DBT_PROJECT_DIR.joinpath(
-        "models", BASE_MODELS_SCHEMA, (f"stg_{table_name}")
-    )
-    yml_path = base_dir.joinpath(f"stg_{table_name}.yml")
-    sql_path = base_dir.joinpath(f"stg_{table_name}.sql")
+
+    base_model_name = f"stg_{table_name}"
+
+    base_dir = DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA, base_model_name)
+    yml_path = base_dir.joinpath(f"{base_model_name}.yml")
+    sql_path = base_dir.joinpath(f"{base_model_name}.sql")
 
     if not base_dir.exists():
         base_dir.mkdir(parents=True, exist_ok=True)
 
-    fqn = f"{BASE_MODELS_SCHEMA}.{table_name}"
+    fqn = f"{BASE_MODELS_SCHEMA}.{base_model_name}"
     fqn_fmt = f"[white]{fqn}[/white]"
     source_fqn = f"{source}.{table_name}"
     source_fqn_fmt = f"[white]{source_fqn}[/white]"
 
-    base_model_exists = check_if_base_model_exists(table_name)
+    base_model_exists = check_if_base_model_exists(base_model_name)
     if base_model_exists:
         if force:
             operation = "overwriting"
@@ -91,6 +92,9 @@ def create(
     )
     with open(yml_path, "w") as file:
         file.write(base_model_yaml_content)
+
+    call_shell(f"dbt run --select {base_model_name}")
+
     print(
         f"YAML template for base model {fqn_fmt} has been {operation_past_tense} successfully."
     )
