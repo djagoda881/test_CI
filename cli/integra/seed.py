@@ -18,48 +18,26 @@ DEFAULT_SEED_SCHEMA_PATH = DBT_PROJECT_DIR.joinpath(
 )
 
 
-def get_excel_files(
-    filename: str = None, seed_files_path: str = DEFAULT_SEED_SCHEMA_PATH.parent
-) -> None:
+def list_excel_files(path: str) -> None:
 
     """
-    Downloads all files not saved in .csv format from master_data for conversion to csv.
+    Downloads all files from the selected path.
 
     Args:
-        filename (str, optional): The name of the file to be converted, if nothing is specified, all files will be included. Defaults to None.
-        seed_files_path (str, optional): Path to master data folder containing all seeds. Defaults to `DEFAULT_SEED_SCHEMA_PATH.parent`.
+        path (str, optional): Path to folder.
 
+    Returns:
+        excel_files: All excel files from selected path.
+        all_files: All files from selected path.
     """
 
-    all_files_under_seeds_dir = os.listdir(seed_files_path)
+    all_files = os.listdir(path)
 
     supported_extensions = (".xls", ".xlsx", ".xlsm", ".xlsb", ".odf", ".ods", ".odt")
 
-    excel_files = [
-        file
-        for file in all_files_under_seeds_dir
-        if file.endswith(supported_extensions)
-    ]
+    excel_files = [file for file in all_files if file.endswith(supported_extensions)]
 
-    if filename is not None:
-        if filename not in excel_files:
-            return
-        else:
-            excel_files = [filename]
-
-    for excel_file in excel_files:
-        filename_without_file_extension = excel_file.split(".")[0]
-        filename_with_csv_file_extension = (
-            filename_without_file_extension.replace(" ", "_") + ".csv"
-        )
-
-        if filename_with_csv_file_extension not in all_files_under_seeds_dir:
-            _excel_to_csv(
-                os.path.join(DEFAULT_SEED_SCHEMA_PATH.parent, excel_file),
-                os.path.join(
-                    DEFAULT_SEED_SCHEMA_PATH.parent, filename_with_csv_file_extension
-                ),
-            )
+    return excel_files, all_files
 
 
 def _excel_to_csv(excel_file_path, cvs_file_path) -> None:
@@ -236,7 +214,21 @@ def register(
     if isinstance(yaml_path, str):
         yaml_path = Path(yaml_path)
 
-    get_excel_files(filename=seed)
+    excel_files, all_files = list_excel_files(DEFAULT_SEED_SCHEMA_PATH.parent)
+
+    for excel_file in excel_files:
+        filename_without_file_extension = excel_file.split(".")[0]
+        filename_with_csv_file_extension = (
+            filename_without_file_extension.replace(" ", "_") + ".csv"
+        )
+
+        if filename_with_csv_file_extension not in all_files:
+            _excel_to_csv(
+                os.path.join(DEFAULT_SEED_SCHEMA_PATH.parent, excel_file),
+                os.path.join(
+                    DEFAULT_SEED_SCHEMA_PATH.parent, filename_with_csv_file_extension
+                ),
+            )
 
     # If no seed was passed, register all seeds
     if not seed:
