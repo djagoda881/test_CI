@@ -5,7 +5,6 @@ import yaml
 import pandas as pd
 from rich import print
 from rich.prompt import Prompt
-from rich.prompt import Prompt
 from pathlib import Path
 from yaml.loader import SafeLoader
 from .common import DBT_PROJECT_DIR, call_shell, run_in_dbt_project
@@ -62,8 +61,8 @@ def _excel_to_csv(excel_file_path, cvs_file_path) -> None:
         cvs_file_path,
         index=False,
     )
-    csv_file = os.path.basename(cvs_file_path).split("/")[-1]
-    excel_file = os.path.basename(excel_file_path).split("/")[-1]
+    csv_file = cvs_file_path.name
+    excel_file = excel_file_path.name
 
     print(
         f"Created [white]{csv_file}[/white] as a copy of [white]{excel_file}[/white] [green]successfully[/green]."
@@ -224,11 +223,11 @@ def register(
 
         if filename_with_csv_file_extension not in all_files:
             _excel_to_csv(
-                os.path.join(DEFAULT_SEED_SCHEMA_PATH.parent, excel_file),
-                os.path.join(
-                    DEFAULT_SEED_SCHEMA_PATH.parent, filename_with_csv_file_extension
+                DEFAULT_SEED_SCHEMA_PATH.parent.joinpath(excel_file),
+                DEFAULT_SEED_SCHEMA_PATH.parent.joinpath(
+                    filename_with_csv_file_extension
                 ),
-            )
+            ),
 
     # If no seed was passed, register all seeds
     if not seed:
