@@ -1,0 +1,6 @@
+.venv
+tests/.venv
+.bash_history
+dbt_packages
+logs
+.user.yml
