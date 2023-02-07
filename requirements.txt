@@ -12,3 +12,4 @@ pandas==1.5.3
 rich==13.2.0
 mock==5.0.1
 openpyxl==3.0.10
+oyaml==1.0
