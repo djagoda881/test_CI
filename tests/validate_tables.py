@@ -8,8 +8,8 @@ import sys
 # solution to import files across the repo until we make this repo a python package
 current_directory = os.path.dirname(__file__)
 parent_directory = os.path.dirname(current_directory)
-integra_module = os.path.join(parent_directory, "cli", "integra")
-sys.path.insert(1, integra_module)
+nesso_module = os.path.join(parent_directory, "cli", "nesso")
+sys.path.insert(1, nesso_module)
 
 
 from common import find_dbt_project
