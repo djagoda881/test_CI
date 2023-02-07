@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Util to work in a sane way. Run eg. `sh up.sh -w dbt` to log into the `nesso` container and cd into dbt directory.
+set -eu
+
+NESSO_HOME=/home/nesso
+
+while getopts w: flag
+do
+    case "${flag}" in
+        w) COMPONENT=${OPTARG}
+            case ${OPTARG} in
+                tests) WORKDIR=$NESSO_HOME/tests/dbt_projects;;
+            esac
+    esac
+done
+
+docker exec -it -w ${WORKDIR:-$NESSO_HOME} nesso_cli bash

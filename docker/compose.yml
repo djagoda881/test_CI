@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  nesso_cli:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    container_name: nesso_cli
+    volumes:
+      - ..:/home/nesso
+      - ../macros:/home/nesso/tests/dbt_projects/postgres/macros
+    shm_size: '4gb'
+    command: "sleep infinity"
+    environment:
+      SHELL: "/bin/bash"
+    restart: "unless-stopped"
+
+  nesso_postgres:
+    image: postgres:15.1
+    container_name: nesso_postgres
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db
+      POSTGRES_USER: user
+    volumes:
+      - nesso_db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+volumes:
+  nesso_db:
