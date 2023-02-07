@@ -61,7 +61,7 @@
     {% endif %}
     {% do sources_yaml.append('\n    tables:') %}
 
-    {% set tables=codegen.get_tables_in_schema(schema_name, database_name, table_pattern, exclude) %}
+    {% set tables=get_tables_in_schema(schema_name, database_name, table_pattern, exclude) %}
 {% else %}
     {% set tables = table_names %}
 
