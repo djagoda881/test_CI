@@ -4,3 +4,11 @@ tests/.venv
 dbt_packages
 logs
 .user.yml
+.cache
+.local
+.ssh
+.vscode-server
+.ipython/*
+__pycache__
+target
+.gitconfig
