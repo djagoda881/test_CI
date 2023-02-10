@@ -17,9 +17,7 @@ def bootstrap(
     mart: str = typer.Argument(
         ..., help="The data mart in which the models will be located."
     ),
-    project_name: str = typer.Argument(
-        ..., help="The name of the project inside the mart."
-    ),
+    project: str = typer.Argument(..., help="The name of the project inside the mart."),
 ):
     """
     Bootstrap a new project.
@@ -27,7 +25,7 @@ def bootstrap(
     Args:
         model_name (str): The name of the model.
         mart (str): The data mart in which the models will be located.
-        project_name (str): The name of the project inside the mart.
+        project (str): The name of the project inside the mart.
 
     Generates the following files:\n
         - models/marts/<MART>/<PROJECT_NAME>/<MODEL_NAME>/<MODEL_NAME>.sql (empty file)
@@ -38,7 +36,7 @@ def bootstrap(
     Example:
         `nesso model bootstrap c4c_example sales cloud_for_customer`
     """
-    PROJECT_DIR = MODELS_DIR.joinpath("marts", mart, project_name)
+    PROJECT_DIR = MODELS_DIR.joinpath("marts", mart, project)
     MODEL_DIR = PROJECT_DIR.joinpath(model_name)
 
     if not MODEL_DIR.exists():
@@ -48,7 +46,7 @@ def bootstrap(
     try:
         sql_path.touch(exist_ok=False)
         sql_path_short = pathlib.Path(
-            "models", "marts", mart, project_name, model_name, model_name + ".sql"
+            "models", "marts", mart, project, model_name, model_name + ".sql"
         )
         print(
             f"File [bright_black]{sql_path_short}[/bright_black] has been created [green]successfully[/green]."
@@ -71,7 +69,7 @@ def bootstrap_yaml(
     mart: str = typer.Argument(
         ..., help="The mart (schema) in which the model is located."
     ),
-    project_name: str = typer.Argument(
+    project: str = typer.Argument(
         ..., help="The name of the project under which the model falls."
     ),
     technical_owner: str = typer.Option(
@@ -96,7 +94,7 @@ def bootstrap_yaml(
     Args:
         model_name (str): The name of the model.
         mart (str): The data mart in which the models will be located.
-        project_name (str): The name of the project inside the mart.
+        project (str): The name of the project inside the mart.
         technical_owner (str, Optional): The technical owner of the table.
         business_owner (str, Optional): The business owner of the table.
         target (str, Optional): The environment to use. This should only be altered in production.
@@ -109,7 +107,7 @@ def bootstrap_yaml(
 
     """
 
-    PROJECT_DIR = MODELS_DIR.joinpath("marts", mart, project_name)
+    PROJECT_DIR = MODELS_DIR.joinpath("marts", mart, project)
     MODEL_DIR = PROJECT_DIR.joinpath(model_name)
 
     if not MODEL_DIR.exists():
