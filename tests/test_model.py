@@ -11,11 +11,11 @@ from nesso.source import check_if_source_exists
 from nesso.source import create as create_source
 
 
-def test_model_bootstrap(MART, PROJECT, MODEL, MODEL_PATH):
+def test_model_bootstrap(MODEL, MODEL_PATH, MART, PROJECT):
 
     assert not MODEL_PATH.exists()
 
-    bootstrap(project=PROJECT, mart=MART, model=MODEL)
+    bootstrap(MODEL, mart=MART, project=PROJECT)
 
     assert MODEL_PATH.exists()
 
@@ -25,14 +25,14 @@ def test_model_bootstrap(MART, PROJECT, MODEL, MODEL_PATH):
 
 def test_model_bootstrap_yaml(
     postgres_connection,
-    MART,
-    PROJECT,
     MODEL,
     MODEL_PATH,
+    MODEL_YAML_PATH,
+    MART,
+    PROJECT,
     TEST_SOURCE,
     TEST_TABLE_CONTACT,
     TEST_TABLE_CONTACT_BASE_MODEL,
-    MODEL_YAML_PATH,
 ):
 
     assert not check_if_source_exists(TEST_SOURCE)
@@ -46,7 +46,7 @@ def test_model_bootstrap_yaml(
         lambda: key.ENTER,
     ):
 
-        create_source(TEST_SOURCE)
+        create_source(TEST_SOURCE, project=DBT_PROJECT_DIR.name)
 
     # Materialize the model.
     bootstrap(MODEL, mart=MART, project=PROJECT)
@@ -81,6 +81,6 @@ def test_model_bootstrap_yaml(
         ignore_errors=True,
     )
     shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "marts", MART),
+        DBT_PROJECT_DIR.joinpath("models", "marts"),
         ignore_errors=True,
     )
