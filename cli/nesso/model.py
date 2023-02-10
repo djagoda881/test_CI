@@ -13,7 +13,7 @@ MODELS_DIR = pathlib.Path(__file__).resolve().parent.parent.parent.joinpath("mod
 @app.command()
 @run_in_dbt_project
 def bootstrap(
-    model_name: str = typer.Argument(..., help="The name of the model."),
+    model: str = typer.Argument(..., help="The name of the model."),
     mart: str = typer.Argument(
         ..., help="The data mart in which the models will be located."
     ),
@@ -23,7 +23,7 @@ def bootstrap(
     Bootstrap a new project.
 
     Args:
-        model_name (str): The name of the model.
+        model (str): The name of the model.
         mart (str): The data mart in which the models will be located.
         project (str): The name of the project inside the mart.
 
@@ -37,16 +37,16 @@ def bootstrap(
         `nesso model bootstrap c4c_example sales cloud_for_customer`
     """
     PROJECT_DIR = MODELS_DIR.joinpath("marts", mart, project)
-    MODEL_DIR = PROJECT_DIR.joinpath(model_name)
+    MODEL_DIR = PROJECT_DIR.joinpath(model)
 
     if not MODEL_DIR.exists():
         MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-    sql_path = MODEL_DIR.joinpath(model_name + ".sql")
+    sql_path = MODEL_DIR.joinpath(model + ".sql")
     try:
         sql_path.touch(exist_ok=False)
         sql_path_short = pathlib.Path(
-            "models", "marts", mart, project, model_name, model_name + ".sql"
+            "models", "marts", mart, project, model, model + ".sql"
         )
         print(
             f"File [bright_black]{sql_path_short}[/bright_black] has been created [green]successfully[/green]."
@@ -65,7 +65,7 @@ def bootstrap(
 @app.command()
 @run_in_dbt_project
 def bootstrap_yaml(
-    model_name: str = typer.Argument(..., help="The name of the model."),
+    model: str = typer.Argument(..., help="The name of the model."),
     mart: str = typer.Argument(
         ..., help="The mart (schema) in which the model is located."
     ),
@@ -92,7 +92,7 @@ def bootstrap_yaml(
     Bootstrap the YAML file for a particular model. The model must already be materialized.
 
     Args:
-        model_name (str): The name of the model.
+        model (str): The name of the model.
         mart (str): The data mart in which the models will be located.
         project (str): The name of the project inside the mart.
         technical_owner (str, Optional): The technical owner of the table.
@@ -108,28 +108,28 @@ def bootstrap_yaml(
     """
 
     PROJECT_DIR = MODELS_DIR.joinpath("marts", mart, project)
-    MODEL_DIR = PROJECT_DIR.joinpath(model_name)
+    MODEL_DIR = PROJECT_DIR.joinpath(model)
 
     if not MODEL_DIR.exists():
         MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-    print(f"Creating YAML for model [blue]{model_name}[/blue]...")
-    yml_path = MODEL_DIR.joinpath(model_name + ".yml")
+    print(f"Creating YAML for model [blue]{model}[/blue]...")
+    yml_path = MODEL_DIR.joinpath(model + ".yml")
 
     if technical_owner is None:
         technical_owner = Prompt.ask(
-            f"Please provide a [white]technical owner[/white] for model [blue]{model_name}[/blue] and then press [green]ENTER[/green]"
+            f"Please provide a [white]technical owner[/white] for model [blue]{model}[/blue] and then press [green]ENTER[/green]"
         )
     if business_owner is None:
         business_owner = Prompt.ask(
-            f"Please provide a [white]business owner[/white] for model [blue]{model_name}[/blue] and then press [green]ENTER[/green]"
+            f"Please provide a [white]business owner[/white] for model [blue]{model}[/blue] and then press [green]ENTER[/green]"
         )
 
-    generate_model_yaml_text_command = f"""dbt -q run-operation generate_model_yaml --target {target} --args '{{"model_name": "{model_name}", "technical_owner":{technical_owner}, "business_owner":{business_owner}, "upstream_metadata": true, "case_sensitive_cols": {case_sensitive_cols}}}'"""
+    generate_model_yaml_text_command = f"""dbt -q run-operation generate_model_yaml --target {target} --args '{{"model_name": "{model}", "technical_owner":{technical_owner}, "business_owner":{business_owner}, "upstream_metadata": true, "case_sensitive_cols": {case_sensitive_cols}}}'"""
     model_yaml_text = call_shell(generate_model_yaml_text_command)
     with open(yml_path, "w") as file:
         file.write(model_yaml_text)
-    print(f"YAML template for [blue]{model_name}[/blue] has been created successfully.")
+    print(f"YAML template for [blue]{model}[/blue] has been created successfully.")
 
 
 if __name__ == "__main__":
