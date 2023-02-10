@@ -72,10 +72,10 @@ def bootstrap_yaml(
         ..., help="The name of the project under which the model falls."
     ),
     technical_owner: str = typer.Option(
-        None, "--technical-owner", help="The technical owner of the table."
+        ..., "--technical-owner", help="The technical owner of the table."
     ),
     business_owner: str = typer.Option(
-        None, "--business-owner", help="The business owner of the table."
+        ..., "--business-owner", help="The business owner of the table."
     ),
     target: str = typer.Option(
         "qa",
@@ -114,15 +114,6 @@ def bootstrap_yaml(
 
     print(f"Creating YAML for model [blue]{model}[/blue]...")
     yml_path = MODEL_DIR.joinpath(model + ".yml")
-
-    if technical_owner is None:
-        technical_owner = Prompt.ask(
-            f"Please provide a [white]technical owner[/white] for model [blue]{model}[/blue] and then press [green]ENTER[/green]"
-        )
-    if business_owner is None:
-        business_owner = Prompt.ask(
-            f"Please provide a [white]business owner[/white] for model [blue]{model}[/blue] and then press [green]ENTER[/green]"
-        )
 
     generate_model_yaml_text_command = f"""dbt -q run-operation generate_model_yaml --target {target} --args '{{"model_name": "{model}", "technical_owner":{technical_owner}, "business_owner":{business_owner}, "upstream_metadata": true, "case_sensitive_cols": {case_sensitive_cols}}}'"""
     model_yaml_text = call_shell(generate_model_yaml_text_command)
