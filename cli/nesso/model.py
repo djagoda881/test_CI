@@ -1,13 +1,14 @@
 import pathlib
 
 import typer
-from .common import call_shell, run_in_dbt_project
 from rich import print
 from rich.prompt import Prompt
 
+from .common import DBT_PROJECT_DIR, call_shell, run_in_dbt_project
+
 app = typer.Typer()
 
-MODELS_DIR = pathlib.Path(__file__).resolve().parent.parent.parent.joinpath("models")
+MODELS_DIR = DBT_PROJECT_DIR.joinpath("models")
 
 
 @app.command()
@@ -43,16 +44,14 @@ def bootstrap(
         MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
     sql_path = MODEL_DIR.joinpath(model + ".sql")
-    try:
-        sql_path.touch(exist_ok=False)
-        sql_path_short = pathlib.Path(
-            "models", "marts", mart, project, model, model + ".sql"
-        )
-        print(
-            f"File [bright_black]{sql_path_short}[/bright_black] has been created [green]successfully[/green]."
-        )
-    except FileExistsError:
-        pass
+
+    sql_path.touch(exist_ok=True)
+    sql_path_short = pathlib.Path(
+        "models", "marts", mart, project, model, model + ".sql"
+    )
+    print(
+        f"File [bright_black]{sql_path_short}[/bright_black] has been created [green]successfully[/green]."
+    )
 
     print("Model bootstrapping is [green]complete[/green].")
 
