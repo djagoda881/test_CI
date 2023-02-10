@@ -1,40 +1,42 @@
-
 import builtins
-import os
-import random
 import shutil
-from datetime import datetime
 
 import mock
-import pandas as pd
-import pytest
-import yaml
-
 from getkey import key
 from nesso.base_model import check_if_base_model_exists
-from nesso.model import bootstrap, bootstrap_yaml
-from nesso.source import add as add_source
+from nesso.base_model import create as create_base_model
+from nesso.common import DBT_PROJECT_DIR
 from nesso.source import check_if_source_exists, check_if_source_table_exists
 from nesso.source import create as create_source
 
 
+def test_base_model_create(
+    postgres_connection,
+    TEST_SOURCE,
+    TEST_TABLE_CONTACT,
+    TEST_TABLE_CONTACT_BASE_MODEL,
+):
 
-def test_base_model_create(TEST_SOURCE, postgres_connection):
-
+    # Assumptions.
     assert not check_if_source_exists(TEST_SOURCE)
-    assert not check_if_base_model_exists(TEST_TABLE_ACCOUNT_BASE_MODEL)
+    assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
+    assert not check_if_base_model_exists(TEST_TABLE_CONTACT_BASE_MODEL)
 
-    # Create the source
+    # Create a source with the test table in it.
     with mock.patch.object(
         builtins,
         "input",
         lambda: key.ENTER,
     ):
 
-        create_source(TEST_SOURCE)
+        create_source(TEST_SOURCE, create_base_models=False)
+
+    assert check_if_source_exists(TEST_SOURCE)
+    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
+
+    create_base_model(source=TEST_SOURCE, source_table_name=TEST_TABLE_CONTACT)
 
     assert check_if_base_model_exists(TEST_TABLE_CONTACT_BASE_MODEL)
-    assert check_if_source_exists(TEST_SOURCE)
 
     # Cleanup.
     shutil.rmtree(
@@ -46,4 +48,3 @@ def test_base_model_create(TEST_SOURCE, postgres_connection):
         ignore_errors=True,
     )
     postgres_connection.execute(f"DROP VIEW IF EXISTS {TEST_TABLE_CONTACT_BASE_MODEL};")
-    postgres_connection.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_CONTACT};")

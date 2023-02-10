@@ -41,10 +41,21 @@ def check_if_source_table_exists(source: str, table_name: str) -> bool:
 @run_in_dbt_project
 def create(
     source: str,
-    case_sensitive_cols: bool = True,
+    project: str = typer.Option(DBT_PROJECT_DIR.name, "--project", "-p"),
+    case_sensitive_cols: bool = typer.Option(
+        True,
+        "--case-sensitive-cols",
+        "-c",
+        help="Whether the column names of the source case-sensitive.",
+    ),
     force: bool = typer.Option(False, "--force", "-f"),
     no_profile: bool = typer.Option(False, "--no-profile", "-np"),
-    project: str = DBT_PROJECT_DIR.name,
+    create_base_models: bool = typer.Option(
+        False,
+        "--create-base-models",
+        "-b",
+        help="Whether to also create base models for all models in `source`.",
+    ),
 ):
     """
     Adds a new source schema with all existing tables in it.
@@ -79,7 +90,9 @@ def create(
     print(f"[white]{operation.title()} source[/white] [blue]{source}[/blue]...")
 
     args = {"schema_name": source, "print_result": "True"}
-    get_existing_tables_cmd = f"dbt -q run-operation get_tables_in_schema --args '{args}'"
+    get_existing_tables_cmd = (
+        f"dbt -q run-operation get_tables_in_schema --args '{args}'"
+    )
     existing_tables = call_shell(get_existing_tables_cmd).strip().split(",")
 
     for table in existing_tables:
@@ -91,14 +104,18 @@ def create(
         if no_profile:
             print(f"Creating description template for model [blue]{fqn_fmt}[/blue]...")
             args = {"schema": source, "relation_name": table}
-            content = call_shell(f"dbt -q run-operation create_description_markdown --args '{args}'")
+            content = call_shell(
+                f"dbt -q run-operation create_description_markdown --args '{args}'"
+            )
             success_msg = (
                 f"Description template successfully written to {docs_path_fmt}."
             )
         else:
             print(f"Profiling source table {fqn_fmt}...")
             args = {"schema": source, "relation_name": table}
-            content = call_shell(f"dbt -q run-operation print_profile_docs --args '{args}'")
+            content = call_shell(
+                f"dbt -q run-operation print_profile_docs --args '{args}'"
+            )
             success_msg = f"Profile successfully written to {docs_path_fmt}."
 
         with open(docs_path, "w") as file:
@@ -128,8 +145,11 @@ def create(
     print(f"Source [blue]{source}[/blue] has been {operation_past_tense} successfully.")
 
     # Create base models for all added sources.
-    for table in existing_tables:
-        create_base_model(source, table, project, case_sensitive_cols)
+    if create_base_models:
+        for table in existing_tables:
+            create_base_model(
+                source, table, project=project, case_sensitive_cols=case_sensitive_cols
+            )
 
     return True
 
@@ -138,6 +158,7 @@ def create(
 @run_in_dbt_project
 def add(
     source: str = typer.Argument(..., help="The name of the source schema."),
+    project: str = typer.Option(DBT_PROJECT_DIR.name, "--project", "-p"),
     table_name: str = typer.Argument(..., help="The name of the table to add."),
     technical_owner: str = typer.Option(
         None, "--technical-owner", help="The technical owner of the table."
@@ -147,9 +168,11 @@ def add(
     ),
     no_profile: bool = typer.Option(False, "--no-profile", "-np"),
     case_sensitive_cols: bool = typer.Option(
-        True, "--case_sensitive_cols", help="Whether the database is case-sensitive."
+        True,
+        "--case-sensitive-cols",
+        "-c",
+        help="Whether the column names of the source case-sensitive.",
     ),
-    project: str = DBT_PROJECT_DIR.name,
 ) -> bool:
     """
     Add a new table to a source schema and materializes it as a base model.
@@ -226,13 +249,17 @@ def add(
 
     # Generate source YAML and append it to the sources schema.
     args = {
-        "schema_name": source, 
-        "table_names": [table_name,], 
-        "technical_owner": technical_owner, 
-        "business_owner": business_owner, 
-        "case_sensitive_cols": case_sensitive_cols
+        "schema_name": source,
+        "table_names": [
+            table_name,
+        ],
+        "technical_owner": technical_owner,
+        "business_owner": business_owner,
+        "case_sensitive_cols": case_sensitive_cols,
     }
-    generate_source_text_command = f"""dbt -q run-operation generate_source --args '{args}'"""
+    generate_source_text_command = (
+        f"""dbt -q run-operation generate_source --args '{args}'"""
+    )
     source_str = call_shell(generate_source_text_command)
     with open(source_path, "a") as file:
         file.write(source_str)

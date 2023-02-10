@@ -14,16 +14,15 @@ from nesso.source import create as create_source
 
 @pytest.fixture(scope="session")
 def SOURCE_PATH(TEST_SOURCE):
-    yield DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE, TEST_SOURCE + ".yml")
-
-TEST_TABLE_CONTACT_BASE_MODEL = "stg_test_table_contact"
-TEST_TABLE_ACCOUNT_BASE_MODEL = "stg_test_table_account"
+    yield DBT_PROJECT_DIR.joinpath(
+        "models", "sources", TEST_SOURCE, TEST_SOURCE + ".yml"
+    )
 
 
 def test_check_if_source_exists(SOURCE_PATH, TEST_SOURCE):
 
     assert not check_if_source_exists(TEST_SOURCE)
-    
+
     SOURCE_PATH.parent.mkdir(parents=True, exist_ok=True)
     SOURCE_PATH.touch()
 
@@ -48,7 +47,7 @@ def test_check_if_source_table_exists(SOURCE_PATH, TEST_SOURCE, TEST_TABLE_CONTA
         yaml.safe_dump(source_yaml, f)
 
     assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
-    
+
     # Cleanup.
     shutil.rmtree(
         DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
@@ -56,7 +55,14 @@ def test_check_if_source_table_exists(SOURCE_PATH, TEST_SOURCE, TEST_TABLE_CONTA
     )
 
 
-def test_source_create(postgres_connection, TEST_SOURCE, TEST_TABLE_CONTACT, TEST_TABLE_ACCOUNT):
+def test_source_create(
+    postgres_connection,
+    TEST_SOURCE,
+    TEST_TABLE_CONTACT,
+    TEST_TABLE_ACCOUNT,
+    TEST_TABLE_CONTACT_BASE_MODEL,
+    TEST_TABLE_ACCOUNT_BASE_MODEL,
+):
 
     assert not check_if_source_exists(TEST_SOURCE)
 
@@ -67,9 +73,13 @@ def test_source_create(postgres_connection, TEST_SOURCE, TEST_TABLE_CONTACT, TES
         lambda: key.ENTER,
     ):
 
-        create_source(TEST_SOURCE)
+        create_source(TEST_SOURCE, project=DBT_PROJECT_DIR.name)
 
     assert check_if_source_exists(TEST_SOURCE)
+    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
+    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
+    assert check_if_base_model_exists(TEST_TABLE_CONTACT_BASE_MODEL)
+    assert check_if_base_model_exists(TEST_TABLE_ACCOUNT_BASE_MODEL)
 
     # Cleanup
     shutil.rmtree(
@@ -85,7 +95,46 @@ def test_source_create(postgres_connection, TEST_SOURCE, TEST_TABLE_CONTACT, TES
     postgres_connection.execute(f"DROP VIEW IF EXISTS {TEST_TABLE_ACCOUNT_BASE_MODEL};")
 
 
-def test_source_add(postgres_connection, SOURCE_PATH, TEST_SOURCE, TEST_TABLE_ACCOUNT, TEST_TABLE_CONTACT):
+def test_source_create_no_base_models(
+    TEST_SOURCE,
+    TEST_TABLE_CONTACT,
+    TEST_TABLE_ACCOUNT,
+    TEST_TABLE_CONTACT_BASE_MODEL,
+    TEST_TABLE_ACCOUNT_BASE_MODEL,
+):
+    assert not check_if_source_exists(TEST_SOURCE)
+
+    # Create a new source.
+    with mock.patch.object(
+        builtins,
+        "input",
+        lambda: key.ENTER,
+    ):
+        create_source(
+            TEST_SOURCE, project=DBT_PROJECT_DIR.name, create_base_models=False
+        )
+
+    assert check_if_source_exists(TEST_SOURCE)
+    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_CONTACT)
+    assert check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
+    assert not check_if_base_model_exists(TEST_TABLE_CONTACT_BASE_MODEL)
+    assert not check_if_base_model_exists(TEST_TABLE_ACCOUNT_BASE_MODEL)
+
+    # Cleanup
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", "sources", TEST_SOURCE),
+        ignore_errors=False,
+    )
+
+
+def test_source_add(
+    postgres_connection,
+    SOURCE_PATH,
+    TEST_SOURCE,
+    TEST_TABLE_ACCOUNT,
+    TEST_TABLE_CONTACT,
+    TEST_TABLE_ACCOUNT_BASE_MODEL,
+):
 
     assert not check_if_source_exists(TEST_SOURCE)
     assert not check_if_source_table_exists(TEST_SOURCE, TEST_TABLE_ACCOUNT)
@@ -93,14 +142,9 @@ def test_source_add(postgres_connection, SOURCE_PATH, TEST_SOURCE, TEST_TABLE_AC
 
     # Create a source with only one of the two tables that exist in the database.
     SOURCE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    source_yaml =  {
+    source_yaml = {
         "version": 2,
-        "sources": [
-            {
-                "name": TEST_SOURCE,
-                "tables": [{"name": TEST_TABLE_CONTACT}]
-            }
-        ],
+        "sources": [{"name": TEST_SOURCE, "tables": [{"name": TEST_TABLE_CONTACT}]}],
     }
 
     # This is just to have properly indented YAML
@@ -121,7 +165,8 @@ def test_source_add(postgres_connection, SOURCE_PATH, TEST_SOURCE, TEST_TABLE_AC
 
         add_source(
             TEST_SOURCE,
-            TEST_TABLE_ACCOUNT,
+            table_name=TEST_TABLE_ACCOUNT,
+            project=DBT_PROJECT_DIR.name,
             case_sensitive_cols=True,
         )
 

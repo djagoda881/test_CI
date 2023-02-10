@@ -33,7 +33,7 @@ def check_if_base_model_exists(base_model_name: str) -> bool:
 @run_in_dbt_project
 def create(
     source: str,
-    table_name: str,
+    source_table_name: str,
     project: str = DBT_PROJECT_DIR.name,
     case_sensitive_cols: bool = True,
     force: bool = typer.Option(False, "--force", "-f"),
@@ -49,7 +49,7 @@ def create(
         force (bool, optional): Specifies whether the model is to be overwritten. Defaults to False.
     """
 
-    base_model_name = f"stg_{table_name}"
+    base_model_name = f"stg_{source_table_name}"
 
     base_dir = DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA, base_model_name)
     yml_path = base_dir.joinpath(f"{base_model_name}.yml")
@@ -60,7 +60,7 @@ def create(
 
     fqn = f"{BASE_MODELS_SCHEMA}.{base_model_name}"
     fqn_fmt = f"[white]{fqn}[/white]"
-    source_fqn = f"{source}.{table_name}"
+    source_fqn = f"{source}.{source_table_name}"
     source_fqn_fmt = f"[white]{source_fqn}[/white]"
 
     base_model_exists = check_if_base_model_exists(base_model_name)
@@ -79,7 +79,7 @@ def create(
     # Generate SQL
     print(f"{operation.title()} base model {fqn_fmt} from {source_fqn_fmt}...")
     base_model_content = call_shell(
-        f"""dbt -q run-operation generate_base_model --args '{{"source_name": "{source}", "table_name": "{table_name}", "project": "{project}", "case_sensitive_cols" : {case_sensitive_cols}}}'"""
+        f"""dbt -q run-operation generate_base_model --args '{{"source_name": "{source}", "table_name": "{source_table_name}", "project": "{project}", "case_sensitive_cols" : {case_sensitive_cols}}}'"""
     )
     with open(sql_path, "w") as file:
         file.write(base_model_content)
@@ -88,7 +88,7 @@ def create(
     # Generate YAML
     print(f"{operation.title()} YAML template for base model {fqn}...")
     base_model_yaml_content = call_shell(
-        f"""dbt -q run-operation generate_model_yaml --args '{{"model_name": "{table_name}", "base_model": True }}'"""
+        f"""dbt -q run-operation generate_model_yaml --args '{{"model_name": "{source_table_name}", "base_model": True }}'"""
     )
     with open(yml_path, "w") as file:
         file.write(base_model_yaml_content)

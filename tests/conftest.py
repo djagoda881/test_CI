@@ -11,36 +11,18 @@ from sqlalchemy import create_engine
 
 fake = Faker()
 
+test_tables_nrows = 100
 
-MART = "unit_test"
-PROJECT = "unit_test"
-MODEL = "test_model"
-
-NROWS = 100
-MODEL_PATH = DBT_PROJECT_DIR.joinpath(
-    "models", "marts", MART, PROJECT, MODEL, MODEL + ".sql"
-)
-MODEL_YAML_PATH = DBT_PROJECT_DIR.joinpath(
-    "models", "marts", MART, PROJECT, MODEL, MODEL + ".yml"
-)
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_and_teardown():
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "sources"), ignore_errors=True
-    )
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "conformed"), ignore_errors=True
-    )
-    
+    shutil.rmtree(DBT_PROJECT_DIR.joinpath("models", "sources"), ignore_errors=True)
+    shutil.rmtree(DBT_PROJECT_DIR.joinpath("models", "conformed"), ignore_errors=True)
+
     yield
 
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "sources"), ignore_errors=True
-    )
-    shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "conformed"), ignore_errors=True
-    )
+    shutil.rmtree(DBT_PROJECT_DIR.joinpath("models", "sources"), ignore_errors=True)
+    shutil.rmtree(DBT_PROJECT_DIR.joinpath("models", "conformed"), ignore_errors=True)
 
 
 @pytest.fixture(scope="session")
@@ -48,6 +30,40 @@ def postgres_connection():
     connection = create_engine("postgresql://user:password@nesso_postgres:5432/db")
     yield connection
     connection.dispose()
+
+
+@pytest.fixture(scope="session")
+def MART():
+    yield "unit_test"
+
+
+@pytest.fixture(scope="session")
+def MODEL():
+    yield "test_model"
+
+
+@pytest.fixture(scope="session")
+def PROJECT():
+    yield "unit_test"
+
+
+@pytest.fixture(scope="session")
+def MODEL_PATH(MART, PROJECT, MODEL):
+    yield DBT_PROJECT_DIR.joinpath(
+        "models", "marts", MART, PROJECT, MODEL, MODEL + ".sql"
+    )
+
+
+@pytest.fixture(scope="session")
+def MODEL_YAML_PATH(MART, PROJECT, MODEL):
+    yield DBT_PROJECT_DIR.joinpath(
+        "models", "marts", MART, PROJECT, MODEL, MODEL + ".yml"
+    )
+
+
+@pytest.fixture(scope="session")
+def TEST_SOURCE():
+    yield "public"
 
 
 @pytest.fixture(scope="session")
@@ -61,8 +77,13 @@ def TEST_TABLE_ACCOUNT():
 
 
 @pytest.fixture(scope="session")
-def TEST_SOURCE():
-    yield "public"
+def TEST_TABLE_CONTACT_BASE_MODEL():
+    yield "stg_test_table_contact"
+
+
+@pytest.fixture(scope="session")
+def TEST_TABLE_ACCOUNT_BASE_MODEL():
+    yield "stg_test_table_account"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -72,7 +93,9 @@ def create_contacts_table(postgres_connection, TEST_SOURCE, TEST_TABLE_CONTACT):
 
     class Contact(BaseModel):
         Id: str = Field(default_factory=lambda: i)
-        AccountId: str = Field(default_factory=lambda: random.randint(1, NROWS))
+        AccountId: str = Field(
+            default_factory=lambda: random.randint(1, test_tables_nrows)
+        )
         FirstName: str = Field(default_factory=fake.first_name)
         LastName: str = Field(default_factory=fake.last_name)
         ContactEMail: str = Field(default_factory=fake.email)
@@ -85,12 +108,16 @@ def create_contacts_table(postgres_connection, TEST_SOURCE, TEST_TABLE_CONTACT):
 
     contacts = []
 
-    for i in range(1, NROWS + 1):
+    for i in range(1, test_tables_nrows + 1):
         contacts.append(Contact(Id=i).dict(by_alias=True))
     contacts_df_pandas = pd.DataFrame(contacts)
 
     contacts_df_pandas.to_sql(
-        TEST_TABLE_CONTACT, postgres_connection, schema=TEST_SOURCE, if_exists="replace", index=False
+        TEST_TABLE_CONTACT,
+        postgres_connection,
+        schema=TEST_SOURCE,
+        if_exists="replace",
+        index=False,
     )
 
     yield
@@ -117,15 +144,18 @@ def create_accouts_table(postgres_connection, TEST_SOURCE, TEST_TABLE_ACCOUNT):
 
     accounts = []
 
-    for i in range(1, NROWS + 1):
+    for i in range(1, test_tables_nrows + 1):
         accounts.append(Account(id=i).dict(by_alias=True))
     accounts_df_pandas = pd.DataFrame(accounts)
-    
+
     accounts_df_pandas.to_sql(
-        TEST_TABLE_ACCOUNT, postgres_connection, schema=TEST_SOURCE, if_exists="replace", index=False
+        TEST_TABLE_ACCOUNT,
+        postgres_connection,
+        schema=TEST_SOURCE,
+        if_exists="replace",
+        index=False,
     )
 
     yield
 
     postgres_connection.execute(f"DROP TABLE IF EXISTS {TEST_TABLE_ACCOUNT} CASCADE;")
-

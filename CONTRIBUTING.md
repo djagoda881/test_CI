@@ -11,6 +11,7 @@ cd postgres && pytest ../../test_source.py
 
 We utlize fixtures in specific test files, as well as global fixtures, such as `setup()`, in `conftest.py`.
 
+In the tests, we pre-create two test tables in Postgres, `test_table_contact` and `test_table_account`. All tests should assume these tables exist.
 
 ## Releasing
 Releases are made from the `master` branch. To release a version, publish a version tag from the `master` branch:
