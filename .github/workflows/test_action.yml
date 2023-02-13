@@ -26,7 +26,7 @@ jobs:
           
       - name: Run script file
         run: |
-          cd ~/ && mkdir .dbt/
+          cd ~/  && pwd && mkdir .dbt/
           cp ~/work/integra/integra/tests/localhost_profiles/profiles.yml .dbt/
           cd ~/work/integra/integra/tests
           chmod +x dbt_setup.sh && chmod +x setup.sh
@@ -35,11 +35,6 @@ jobs:
           dbt deps
         shell: bash
 
-      - uses: isbang/compose-action@v1.4.1
-        with:
-          compose-file: "./tests/docker-compose.yml"
-          services: postgres
-      
       - name: Run pytest
         run: |
           cd tests/postgres/integra
