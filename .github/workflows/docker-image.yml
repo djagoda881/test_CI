@@ -13,8 +13,8 @@ jobs:
     services:
       postgres:
         image: postgres:15.1
-        container_name: nesso_postgres
         env:
+          POSTGRES_HOST: nesso_postgres
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: db
