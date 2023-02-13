@@ -1,9 +1,8 @@
 #!/bin/bash
 # Run this once on initial setup.
 # In the future, both the `pip install` and `dbt deps` can be moved to the Dockerfile.
-
 docker compose -f docker/compose.yml up -d --build
-docker exec -it nesso_cli sh -c "cd cli && pip install -e . --user"
+docker exec -it nesso_cli sh -c "pip install -e .[test] --user"
 
-# For now, add each project here
+# # For now, add each project here
 docker exec -it nesso_cli sh -c "cd tests/dbt_projects/postgres && dbt deps"
