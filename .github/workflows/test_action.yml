@@ -27,7 +27,7 @@ jobs:
       - name: Run script file
         run: |
           cd ~/  && pwd && mkdir .dbt/
-          cp ~/work/integra/integra/tests/localhost_profiles/profiles.yml .dbt/
+          cp ~/work/integra/integra/tests/profiles.yml .dbt/
           cd ~/work/integra/integra/tests
           chmod +x dbt_setup.sh && chmod +x setup.sh
           ./dbt_setup.sh
