@@ -36,6 +36,6 @@ jobs:
 
       - name: Run pytest
         run: |
-          cd tests/postgres/integra
-          pytest test_cli.py
+          cd tests/
+          pytest test_model.py
     
