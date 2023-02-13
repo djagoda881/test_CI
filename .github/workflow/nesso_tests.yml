@@ -36,6 +36,6 @@ jobs:
 
       - name: Run pytest
         run: |
-          cd tests/
+          cd tests/ 
           pytest test_model.py
     
