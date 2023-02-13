@@ -9,6 +9,8 @@ services:
     volumes:
       - ..:/home/nesso
       - ../macros:/home/nesso/tests/dbt_projects/postgres/macros
+      - ${HOME}/.gitconfig:/home/nesso/.gitconfig
+      - ${HOME}/.git-credentials:/home/nesso/.git-credentials
     shm_size: '4gb'
     command: "sleep infinity"
     environment:
