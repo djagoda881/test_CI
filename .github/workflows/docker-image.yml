@@ -32,7 +32,8 @@ jobs:
         run: |
           sed -i 's/nesso_postgres/localhost/g' tests/conftest.py
           cp -R macros/ tests/dbt_projects/postgres/
-          cd tests/dbt_projects/postgres && dbt deps
+          cd tests/dbt_projects/postgres && dbt deps && dbt init postgres -s
+          
         shell: bash
 
       - name: Run pytest
