@@ -11,10 +11,9 @@ jobs:
       DBT_PROFILES_DIR: tests/dbt_projects/postgres/profiles.yml
     
     services:
-      postgres:
+      nesso_postgres:
         image: postgres:15.1
         env:
-          POSTGRES_HOST: nesso_postgres
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: db
