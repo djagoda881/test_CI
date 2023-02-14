@@ -3,7 +3,7 @@ postgres:
   outputs:
     qa:
       type: postgres
-      host: localhost
+      host: nesso_postgres
       port: 5432
       dbname: db
       schema: public
