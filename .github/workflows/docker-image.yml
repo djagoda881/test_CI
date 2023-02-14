@@ -36,4 +36,4 @@ jobs:
 
       - name: Run pytest
         run: |
-          cd tests/ && pytest test_*.py
+          pytest tests/test_*.py
