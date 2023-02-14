@@ -38,4 +38,5 @@ jobs:
 
       - name: Run pytest
         run: |
+          psql -h localhost -p 5432 -U username -d db
           cd tests/ && pytest test_model.py
