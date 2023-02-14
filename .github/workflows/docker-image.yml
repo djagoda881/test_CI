@@ -37,5 +37,5 @@ jobs:
 
       - name: Run pytest
         run: |
-          psql -h localhost -p 5432 -U username -d db
+          psql postgres://postgres:password@localhost:5432/db
           cd tests/ && pytest test_model.py
