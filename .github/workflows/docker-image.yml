@@ -28,6 +28,7 @@ jobs:
       - name: Run script file 
         run: |
           sed -i 's/nesso_postgres/localhost/g' tests/conftest.py
+          sed -i 's/nesso_postgres/localhost/g' tests/dbt_projects/postgres/profiles.yml
           cp -R macros/ tests/dbt_projects/postgres/
           cd tests/dbt_projects/postgres && dbt deps 
 
