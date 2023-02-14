@@ -11,9 +11,10 @@ jobs:
       DBT_PROFILES_DIR: tests/dbt_projects/postgres/profiles.yml
     
     services:
-      nesso_postgres:
+      postgres:
         image: postgres:15.1
         env:
+          POSTGRES_HOST: localhost
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: db
@@ -30,6 +31,7 @@ jobs:
           
       - name: Run script file 
         run: |
+          sed -i 's/nesso_postgres/localhost/g' tests/conftest.py
           cp -R macros/ tests/dbt_projects/postgres/
           cd tests/dbt_projects/postgres && dbt deps
         shell: bash
