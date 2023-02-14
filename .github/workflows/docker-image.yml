@@ -30,12 +30,15 @@ jobs:
           
       - name: Run script file 
         run: |
+          pwd
           sed -i 's/nesso_postgres/localhost/g' tests/conftest.py
           cp -R macros/ tests/dbt_projects/postgres/
           cd tests/dbt_projects/postgres && dbt deps 
-          dbt debug --config-dir
+          pwd
         shell: bash
 
       - name: Run pytest
         run: |
+          pwd
           cd tests/ && pytest test_*.py
+          pwd
