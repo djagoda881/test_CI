@@ -13,3 +13,4 @@ __pycache__
 target
 .gitconfig
 .prefect
+.git-credentials
