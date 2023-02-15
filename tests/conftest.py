@@ -5,9 +5,11 @@ from datetime import datetime
 import pandas as pd
 import pytest
 from faker import Faker
-from nesso.common import DBT_PROJECT_DIR
 from pydantic import BaseModel, Field
 from sqlalchemy import create_engine
+from test_seed import SEED_SCHEMA_PATH
+
+from nesso.common import DBT_PROJECT_DIR
 
 fake = Faker()
 
@@ -23,6 +25,7 @@ def setup_and_teardown():
 
     shutil.rmtree(DBT_PROJECT_DIR.joinpath("models", "sources"), ignore_errors=True)
     shutil.rmtree(DBT_PROJECT_DIR.joinpath("models", "conformed"), ignore_errors=True)
+    SEED_SCHEMA_PATH.unlink(missing_ok=True)
 
 
 @pytest.fixture(scope="session")

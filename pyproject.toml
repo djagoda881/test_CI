@@ -14,7 +14,6 @@ dependencies = [
   "prefect-viadot @ git+https://github.com/dyvenia/prefect-viadot.git"
 ]
 
-
 [project.optional-dependencies]
 # databricks = ["prefect-viadot[databricks]"]
 # redshift = ["prefect-viadot[redshift]"]

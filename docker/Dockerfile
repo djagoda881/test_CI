@@ -10,6 +10,7 @@ RUN apt update && apt upgrade -y
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/home/nesso/.local/bin:$PATH"
+ENV SQLALCHEMY_SILENCE_UBER_WARNING=1
 
 # Workdir
 ENV USER="nesso"

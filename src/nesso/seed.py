@@ -1,8 +1,31 @@
+"""
+In order to avoid confusion, it's useful distinguish between these four entities:
+
+a) seed file
+A CSV file that is used by dbt to create a source table. We extend that functionality
+to also support Excel files.
+
+b) seed
+A dbt concept which allows to upload CSVs as tables. In this file, we use this word
+to refer to an entry about a particular seed file in the seed schema.
+
+c) seed schema
+The YAML file holding metadata about seed tables.
+
+d) seed table
+The materialized seed, ie. the actual database table created based on the seed file.
+
+Therefore, to check if a seed exists, we'll be looking for a relevant entry in the seed schema.
+To check if a seed table exists, we will be checking in the database. And to check if
+the seed file or seed schema exists, we'll be examining or searching for YAML files.
+"""
+
+
 from pathlib import Path
 
+import oyaml as yaml
 import pandas as pd
 import typer
-import yaml
 from loguru import logger
 from rich import print
 
@@ -38,62 +61,61 @@ def _excel_to_csv(infile: str, outfile: str) -> None:
     logger.debug(f"{outfile.name} has been created successfully.")
 
 
-def get_all_seeds(target: str = "qa") -> list[str]:
+def check_if_schema_exists(schema_path: str) -> bool:
+    # Enforce pathlib.Path type.
+    schema_path = Path(schema_path)
+
+    # File doesn't exist.
+    if not schema_path.exists():
+        return False
+
+    # File is empty.
+    with open(schema_path) as f:
+        schema_yaml = yaml.safe_load(f)
+    if schema_yaml is None:
+        return False
+
+    return "version" in schema_yaml and "seeds" in schema_yaml
+
+
+def check_if_seed_exists(
+    seed: str, schema_path: str = DEFAULT_SEED_SCHEMA_PATH
+) -> bool:
     """
-    Retrieve all seeds in project. This is done by using `dbt ls` to list
-    all the seed (CSV) files in the seed directory (as specified in `dbt_project.yml`).
-
-    Note that this does not mean that the seeds are materialized.
-
-    Args:
-        target (str, optional) The target to work with, options are ('qa', 'prod').
-            Defaults to qa.
-
-    Returns:
-        list[str]: All seed names in your project.
-    """
-    seed_paths = (
-        call_shell(f"""dbt -q ls --resource-type seed --target {target}""")
-        .strip()
-        .split("\n")
-    )
-    seed_names = [seed_path.split(".")[-1] for seed_path in seed_paths]
-    return seed_names
-
-
-def check_if_seed_exists(seed: str) -> bool:
-    """
-    Check if a seed file is present in the seeds directory.
-
-    Args:
-        seed (str): The name of the seed to check.
-
-    Returns:
-        bool: Whether the seed is registered in dbt.
-    """
-    all_seeds = get_all_seeds()
-    return seed in all_seeds
-
-
-def check_seed_in_yaml(seed: str, yaml_path: str = DEFAULT_SEED_SCHEMA_PATH) -> bool:
-    """
-    Checks if a seed name is inside the schema YAML file.
+    Checks if a seed is present in seed schema file.
 
     Args:
         seed (str) The name of the seed.
-        yaml_path (str, Optional) The path to the file with seed YAML schema.
-            Defaults to `DEFAULT_SEED_SCHEMA_PATH` variable.
+        schema_path (str, Optional) The path to the seed schema. Defaults to
+            `DEFAULT_SEED_SCHEMA_PATH`.
 
     Returns:
-        If the seed name provided to the function is in schema YAML file,
-            it returns True, otherwise it returns False
+        True if the seed is present in the schema, otherwise False.
     """
-    if not yaml_path.is_file():
+    # Enforce pathlib.Path type.
+    schema_path = Path(schema_path)
+
+    if not schema_path.exists():
         return False
 
-    with open(yaml_path) as f:
-        seeds_in_yaml = yaml.safe_load(f)["seeds"]
-        return any([seed.get("name").lower() == seed.lower() for seed in seeds_in_yaml])
+    with open(schema_path) as f:
+        seeds = yaml.safe_load(f)["seeds"]
+
+    if not seeds:
+        return False
+
+    return any([s.get("name").lower() == seed.lower() for s in seeds])
+
+
+def create_schema(schema_path: str = DEFAULT_SEED_SCHEMA_PATH) -> None:
+    # Enforce pathlib.Path type.
+    schema_path = Path(schema_path)
+    if schema_path.exists():
+        raise ValueError(f"Schema '{schema_path}' already exists.")
+
+    schema_yaml = call_shell(f"dbt -q run-operation generate_seed_schema_yaml").strip()
+    with open(schema_path, "w") as f:
+        f.write(schema_yaml)
 
 
 def add_to_schema(
@@ -103,69 +125,37 @@ def add_to_schema(
     schema_path: str = DEFAULT_SEED_SCHEMA_PATH,
     target: str = "qa",
     case_sensitive_cols: bool = True,
+    overwrite: bool = False,
 ) -> None:
-    command = f"""
-dbt -q run-operation --target {target} create_seed_yaml_text --args '{
-    {
-        "seeds": [seed],
-        "technical_owner": {technical_owner},
-        "business_owner": {business_owner},
-        "case_sensitive_cols":{case_sensitive_cols}
-    }
-}'
-"""
-    yaml_text = call_shell(command)
 
-    with open(schema_path, "a") as file:
-        file.write(yaml_text)
+    exists = check_if_seed_exists(seed)
+    if exists and not overwrite:
+        raise ValueError(
+            f"Seed {seed} already exists and 'overwrite' is set to 'False'."
+        )
+
+    schema_exists = check_if_schema_exists(schema_path=schema_path)
+    if not schema_exists:
+        create_schema(schema_path=schema_path)
+
+    args = {
+        "seed": seed,
+        "technical_owner": technical_owner,
+        "business_owner": business_owner,
+        "case_sensitive_cols": case_sensitive_cols,
+    }
+    command = (
+        f"""dbt -q run-operation --target {target} generate_seed_yaml --args '{args}'"""
+    )
+    current_seed_schema = yaml.safe_load(call_shell(command))[0]
+    with open(schema_path) as f:
+        seed_schema = yaml.safe_load(f)
+    seed_schema["seeds"].append(current_seed_schema)
+    with open(schema_path, "w") as f:
+        yaml.safe_dump(seed_schema, f)
 
     successful_comment = f"[blue]{seed}[/blue] has been successfully added to [white]{schema_path}[/white]."
     print(successful_comment)
-
-
-def create_seed_yaml_text(
-    seeds: list[str],
-    technical_owner: str,
-    business_owner: str,
-    new: str = False,
-    target: str = "qa",
-    case_sensitive_cols: bool = True,
-) -> bool:
-
-    """
-    Returns text of YAML file with selected seeds information in it.
-
-    Args:
-        seeds (list[str]): The name(s) of the seed(s).
-        technical_owner (str, Optional): The technical owner of the table.
-        business_owner (str, Optional): The business owner of the table.
-        new (bool, Optional): Whether to include headers that are needed when creating
-            a new yaml. Defaults to False.
-        target (str, Optional): The target to work with, options are ('qa', 'prod').
-            Defaults to qa.
-        case_sensitive_cols (bool, optional): Determine if a given database type is
-            case-sensitive. Defaults to True.
-
-    Returns:
-        yaml_text (str): String with yaml formatting containing seeds information.
-    """
-
-    if len(seeds) == 0:
-        print("No seeds to append to YAML file")
-        return False
-
-    generate_yaml_text_command = f"""
-dbt -q run-operation --target {target} create_seed_yaml_text --args '{
-    {
-        "technical_owner": {technical_owner},
-        "business_owner": {business_owner},
-        "new": {new},
-        "case_sensitive_cols":{case_sensitive_cols}
-    }
-}'
-"""
-    yaml_text = call_shell(generate_yaml_text_command)
-    return yaml_text
 
 
 @app.command()
@@ -196,9 +186,9 @@ default path is DBT_PROJECT_DIR/seeds/master_data/schema.yml""",
         "-t",
         help="the target to work with, options are ('qa', 'prod') default is qa",
     ),
-) -> bool:
+) -> None:
     """
-    Generate YAML and, if needed, create a database table for provided seed file.
+    Add an entry for the seed in seed schema and, if needed, materialize it.
 
     Args:
         seed (str): The name of the seed to register.
@@ -206,63 +196,38 @@ default path is DBT_PROJECT_DIR/seeds/master_data/schema.yml""",
         business_owner (str): The business owner of the table.
         overwrite (bool, Optional): Whether to overwrite schema YAML file with seed information
             if seed is already present in schema YAML file.
-        yaml_path (str, Optional): The absolute path of the YAML file to append seed information.
+        schema_path (str, Optional): The absolute path of the YAML file to append seed information.
             Default path is DBT_PROJECT_DIR/seeds/aster_data/schema.yml.
         target (str, Optional): The target to work with, options are ('qa', 'prod').
             Defaults to qa.
     """
 
-    # Enforce pathlib.Path type
-    yaml_path = Path(yaml_path)
-
-    # excel_files, all_files = list_excel_files(DEFAULT_SEED_SCHEMA_PATH.parent)
-
-    # for excel_file in excel_files:
-    #     filename_without_file_extension = excel_file.split(".")[0]
-    #     filename_with_csv_file_extension = (
-    #         filename_without_file_extension.replace(" ", "_") + ".csv"
-    #     )
-
-    #     if filename_with_csv_file_extension not in all_files:
-    #         _excel_to_csv(
-    #             DEFAULT_SEED_SCHEMA_PATH.parent.joinpath(excel_file),
-    #             DEFAULT_SEED_SCHEMA_PATH.parent.joinpath(
-    #                 filename_with_csv_file_extension
-    #             ),
-    #         ),
-
-    # # If the seed isn't present in the seed schema YAML, materialize it
-    # # in the database.
-    # if not check_seed_exists(seed):
-    #     print(f"Creating table {seed}...")
-    #     print("[white]This may take some time[/white], [green]do not worry[/green]...")
-    #     call_shell(f"dbt seed --target {target} -s {seed}")
-
-    is_seed_in_schema = check_seed_in_yaml(seed, yaml_path=yaml_path)
-    if is_seed_in_schema:
-        print(
-            f"Seed [blue]{seed}[/blue] [b]already exists[/b] in the schema file. Skipping..."
-        )
-
-    mode = "w" if not is_seed_in_schema or overwrite else "a"
-    operation = "created" if mode == "w" else "appended"
+    # Enforce types to fix Typer converting strings to typer.Option objects.
+    schema_path = Path(schema_path)
+    technical_owner = str(technical_owner)
+    business_owner = str(business_owner)
 
     print(f"Registering seed [blue]{seed}[/blue]...")
-    yaml_text = create_yaml(
-        seeds=[seed],
+
+    seed_exists = check_if_seed_exists(seed, schema_path=schema_path)
+    if seed_exists:
+        # We need to handle the case when the seed is present in the schema,
+        # but not materialized (eg. the table was dropped after the seed was registered).
+        args = {"schema_pattern": "", "table_pattern": seed}
+        seed_table_exists_query = f"""dbt -q run-operation get_relations_by_pattern --target {target} --args '{args}'"""
+        seed_table_exists = call_shell(seed_table_exists_query)
+
+        if not seed_table_exists:
+            call_shell(f"dbt -q seed --target {target} --select {seed}")
+
+    add_to_schema(
+        seed,
         technical_owner=technical_owner,
         business_owner=business_owner,
-        new=new,
         target=target,
     )
 
-    if yaml_text:
-        with open(yaml_path, mode) as file:
-            file.write(yaml_text)
-
-        successful_comment = f"[white]{yaml_path}[/white] file has been {operation} [green]successfully[/green] with [blue]{seeds_to_register}[/blue] information ."
-        print(successful_comment)
-        return True
+    print(f"Seed [blue]{seed}[/blue] has been registered [green]Successfully[/green].")
 
 
 if __name__ == "__main__":

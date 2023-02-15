@@ -1,93 +1,79 @@
-{# Adapted from dbt-codegen #}
+{# Adapted from dbt-codegen. #}
+{# Generate seed schema and add seeds into it. #}
+
+{% macro generate_seed_schema_yaml() %}
+
+    {% set yaml=[] %}
+    {% do yaml.append('version: 2') %}
+    {% do yaml.append('') %}
+    {% do yaml.append('seeds: []') %}
+
+    {% if execute %}
+        {% set joined = yaml | join ('\n') %}
+        {{ print(joined) }}
+        {% do return(joined) %}
+    {% endif %}
+
+{% endmacro %}
 
 
----
-{# Generate seed YAML file and updates with seed information #}
-
-{# 'seed_names' refers a list of seeds whose information will be appended to the YAML file #}
-
-
-{% macro create_seed_yaml_text(
-    seed_names=none,
-    technical_owner=none,
-    business_owner=none,
-    new=False,
-    schema_name=target.schema,
+{% macro generate_seed_yaml(
+    seed,
     database_name=target.database,
+    schema_name=target.schema,
     generate_columns=True,
-    include_descriptions=True,
     include_tags=False,
-    name=schema_name,
+    include_owners=True,
+    technical_owner="",
+    business_owner="",
     case_sensitive_cols=True
     ) %}
 
-{% set seeds_yaml=[] %}
+    {% set yaml=[] %}
 
-{% if new %}
-    {% do seeds_yaml.append('version: 2') %}
-    {% do seeds_yaml.append('') %}
-    {% do seeds_yaml.append('seeds:') %}
-{% endif %}
-
-
-{% if seed_names is none %}
-    {% set tables = codegen.get_tables_in_schema(schema_name, database_name, '*', '') %}
-{% else %}
-    {% set tables = seed_names %}
-{% endif %}
-
-{% for table in tables %}
-    {% do seeds_yaml.append('  - name: ' ~ table | lower ) %}
-    
-    {% if include_descriptions %}
-        {% do seeds_yaml.append('    description: ""' ) %}
-    {% endif %}
+    {% do yaml.append('  - name: ' ~ seed | lower ) %}
+    {% do yaml.append('    description: ""' ) %}
 
     {% if include_tags %}
-    {% do seeds_yaml.append('    tags: []' ) %}
+        {% do yaml.append('    tags: []' ) %}
     {% endif %}
 
-    {% do seeds_yaml.append('    meta:' ) %}
-    
-    {% do seeds_yaml.append('      technical_owner: ' ~ technical_owner)%}
-    {% do seeds_yaml.append('      business_owner: ' ~ business_owner)%}
-   
+    {% if include_owners %}
+        {% do yaml.append('    meta:' ) %}
+        {% do yaml.append('      technical_owner: ' ~ technical_owner)%}
+        {% do yaml.append('      business_owner: ' ~ business_owner)%}
+    {% endif %}
+
     {% if generate_columns %}
-    {% do seeds_yaml.append('    columns:') %}
+        {% do yaml.append('    columns:') %}
 
         {% set table_relation=api.Relation.create(
             database=database_name,
             schema=schema_name,
-            identifier=table
+            identifier=seed
         ) %}
-
-        {% set columns=adapter.get_columns_in_relation(table_relation) %}
-
+        {% set columns = adapter.get_columns_in_relation(table_relation) %}
         {% for column in columns %}
             {% if case_sensitive_cols %}
-                {% do seeds_yaml.append('      - name: ' ~ column.name) %}
-                {% do seeds_yaml.append('        quote: True') %}
+                {% do yaml.append('      - name: ' ~ column.name) %}
+                {% do yaml.append('        quote: True') %}
             {% else %}
-                {% do seeds_yaml.append('      - name: ' ~ column.name | lower ) %}
+                {% do yaml.append('      - name: ' ~ column.name | lower ) %}
             {% endif %}
-            {% if include_descriptions %}
-                {% do seeds_yaml.append('        description: ""' ) %}
-            {% endif %}
-            {% do seeds_yaml.append('        tests:' ) %}
-            {% do seeds_yaml.append('          # - unique' ) %}
-            {% do seeds_yaml.append('          # - not_null' ) %}
+            {% do yaml.append('        description: ""' ) %}
+            {% do yaml.append('        tests:' ) %}
+            {% do yaml.append('          # - unique' ) %}
+            {% do yaml.append('          # - not_null' ) %}
+            {% do yaml.append('          # - accepted_values:' ) %}
+            {% do yaml.append('          #   values: ["value1", "value2"]' ) %}
         {% endfor %}
 
     {% endif %}
 
-{% endfor %}
-
-{% if execute %}
-
-    {% set joined = seeds_yaml | join ('\n') %}
-    {{ print(joined) }}
-    {% do return(joined) %}
-
-{% endif %}
+    {% if execute %}
+        {% set joined = yaml | join ('\n') %}
+        {{ print(joined) }}
+        {% do return(joined) %}
+    {% endif %}
 
 {% endmacro %}
