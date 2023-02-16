@@ -1,0 +1,13 @@
+postgres:
+  target: qa
+  outputs:
+    qa:
+      type: postgres
+      host: nesso_postgres
+      port: 5432
+      dbname: db
+      schema: public
+      user: user
+      password: password
+      threads: 8
+      connect_timeout: 5 # default 10 seconds

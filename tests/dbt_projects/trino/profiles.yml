@@ -1,0 +1,12 @@
+trino:
+  target: qa
+  outputs:
+    qa:
+      type: trino
+      host: trino
+      port: 8080
+      database: hive
+      user: trino
+      schema: dbt_trino
+      threads: 8
+      connect_timeout: 5 # default 10 seconds

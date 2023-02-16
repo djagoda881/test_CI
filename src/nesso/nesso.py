@@ -2,10 +2,10 @@
 
 import typer
 
-import integra.source as source
-import integra.base_model as base_model
-import integra.model as model
-import integra.seed as seed
+import nesso.source as source
+import nesso.base_model as base_model
+import nesso.model as model
+import nesso.seed as seed
 
 app = typer.Typer()
 app.add_typer(source.app, name="source")

@@ -1,15 +1,10 @@
 # Changelog
 
-## v1.0.0
+## v0.0.2
+## Added
+- Added versioning and created the first release
+- Changed folder structure
+- Added `CONTRIBUTING.md`
 
-### Added or Changed
-- Added this changelog :)
-- Fixed typos in both templates
-- Back to top links
-- Added more "Built With" frameworks/libraries
-- Changed table of contents to start collapsed
-- Added checkboxes for major features on roadmap
-
-### Removed
-
-- Some packages/libraries from acknowledgements I no longer use
+## v0.0.1
+Initial relase.
