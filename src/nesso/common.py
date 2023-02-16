@@ -84,3 +84,24 @@ def get_current_dbt_target(profiles_dir: str = None) -> str:
         )
 
     return target
+
+
+def get_current_dbt_schema(profiles_dir: str = None) -> str:
+    profiles_option = f"--profiles-dir {profiles_dir}" if profiles_dir else ""
+    command = f"""dbt debug {profiles_option} | grep "profiles" | grep -o '/[^"]*'"""
+    dbt_profiles_path = call_shell(command).strip()
+
+    with open(dbt_profiles_path) as f:
+        dbt_profiles = yaml.safe_load(f)
+
+    current_project_profile = dbt_profiles.get(CURRENT_PROJECT_NAME, {})
+    target = current_project_profile.get("target")
+
+    if target is None:
+        raise ValueError(
+            f"Target not present in dbt profiles file at '{dbt_profiles_path}'"
+        )
+
+    schema = current_project_profile["outputs"][target].get("schema")
+
+    return schema

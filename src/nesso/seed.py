@@ -154,7 +154,7 @@ def add_to_schema(
     with open(schema_path, "w") as f:
         yaml.safe_dump(seed_schema, f)
 
-    successful_comment = f"[blue]{seed}[/blue] has been successfully added to [white]{schema_path}[/white]."
+    successful_comment = f"Seed [blue]{seed}[/blue] has been successfully added to [white]{schema_path}[/white]."
     print(successful_comment)
 
 
@@ -167,12 +167,6 @@ def register(
     ),
     business_owner: str = typer.Option(
         ..., "--business-owner", help="The business owner of the table."
-    ),
-    overwrite: bool = typer.Option(
-        False,
-        "--overwrite",
-        "-o",
-        help="Whether to overwrite the schema YAML.",
     ),
     schema_path: str = typer.Option(
         DEFAULT_SEED_SCHEMA_PATH,
@@ -209,17 +203,11 @@ default path is DBT_PROJECT_DIR/seeds/master_data/schema.yml""",
 
     print(f"Registering seed [blue]{seed}[/blue]...")
 
-    seed_exists = check_if_seed_exists(seed, schema_path=schema_path)
-    if seed_exists:
-        # We need to handle the case when the seed is present in the schema,
-        # but not materialized (eg. the table was dropped after the seed was registered).
-        args = {"schema_pattern": "", "table_pattern": seed}
-        seed_table_exists_query = f"""dbt -q run-operation get_relations_by_pattern --target {target} --args '{args}'"""
-        seed_table_exists = call_shell(seed_table_exists_query)
+    # Materialize the seed.
+    call_shell(f"dbt -q seed --target {target} --select {seed}")
+    logger.debug(f"Seed {seed} has been materialized successfully.")
 
-        if not seed_table_exists:
-            call_shell(f"dbt -q seed --target {target} --select {seed}")
-
+    # Add it to seed schema.
     add_to_schema(
         seed,
         technical_owner=technical_owner,
@@ -227,7 +215,7 @@ default path is DBT_PROJECT_DIR/seeds/master_data/schema.yml""",
         target=target,
     )
 
-    print(f"Seed [blue]{seed}[/blue] has been registered [green]Successfully[/green].")
+    print(f"Seed [blue]{seed}[/blue] has been registered [green]successfully[/green].")
 
 
 if __name__ == "__main__":

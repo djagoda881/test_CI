@@ -195,9 +195,8 @@ def test_register(postgres_connection):
 
     # Register the seed, ie. materialize it and create an entry for it
     # in the seed schema file.
-    registered = register(
+    register(
         seed=TEST_SEED_COUNTRIES_NAME,
-        overwrite=False,
         schema_path=SEED_SCHEMA_PATH,
         technical_owner="test_technical_owner",
         business_owner="test_business_owner",
