@@ -1,10 +1,11 @@
 # Contributing to nesso CLI
 ## Testing
+Note that due to an issue with how `dbt-utils` package is interfering with pytest's `conftest` logic, each test module has to be ran separately.
 1. Clone the repo
 2. Run `cd nesso`
 3. Run `docker/setup`
 4. Run `./up -w tests`
-5. Run `cd <project> && pytest ../../test_source.py`, eg.
+5. Run a test, eg.
 ```bash
 cd postgres && pytest ../../test_source.py
 ```
@@ -21,7 +22,6 @@ git pull
 git tag -a v0.0.2
 git push origin v0.0.2
 ```
-
 
 ## Test coverage
 Run below to generate a coverage badge
