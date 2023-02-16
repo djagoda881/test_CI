@@ -5,8 +5,9 @@ import mock
 import oyaml as yaml
 import pytest
 from getkey import key
+
 from nesso.base_model import check_if_base_model_exists
-from nesso.common import DBT_PROJECT_DIR
+from nesso.common import BASE_MODELS_SCHEMA, DBT_PROJECT_DIR
 from nesso.source import add as add_source
 from nesso.source import check_if_source_exists, check_if_source_table_exists
 from nesso.source import create as create_source
@@ -87,7 +88,7 @@ def test_source_create(
         ignore_errors=False,
     )
     shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "conformed"),
+        DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA),
         ignore_errors=False,
     )
 
@@ -180,7 +181,7 @@ def test_source_add(
         ignore_errors=True,
     )
     shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "conformed"),
+        DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA),
         ignore_errors=True,
     )
     postgres_connection.execute(f"DROP VIEW IF EXISTS {TEST_TABLE_ACCOUNT_BASE_MODEL};")

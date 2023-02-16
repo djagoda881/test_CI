@@ -1,5 +1,5 @@
 """
-In order to avoid confusion, it's useful distinguish between these four entities:
+In order to avoid confusion, it's useful to distinguish between these four entities:
 
 a) seed file
 A CSV file that is used by dbt to create a source table. We extend that functionality
@@ -7,7 +7,7 @@ to also support Excel files.
 
 b) seed
 A dbt concept which allows to upload CSVs as tables. In this file, we use this word
-to refer to an entry about a particular seed file in the seed schema.
+to refer to an entry in the seed schema about a particular seed file.
 
 c) seed schema
 The YAML file holding metadata about seed tables.

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import create_engine
 from test_seed import SEED_SCHEMA_PATH
 
-from nesso.common import DBT_PROJECT_DIR
+from nesso.common import BASE_MODELS_SCHEMA, DBT_PROJECT_DIR
 
 fake = Faker()
 
@@ -19,12 +19,16 @@ test_tables_nrows = 100
 @pytest.fixture(scope="session", autouse=True)
 def setup_and_teardown():
     shutil.rmtree(DBT_PROJECT_DIR.joinpath("models", "sources"), ignore_errors=True)
-    shutil.rmtree(DBT_PROJECT_DIR.joinpath("models", "conformed"), ignore_errors=True)
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA), ignore_errors=True
+    )
 
     yield
 
     shutil.rmtree(DBT_PROJECT_DIR.joinpath("models", "sources"), ignore_errors=True)
-    shutil.rmtree(DBT_PROJECT_DIR.joinpath("models", "conformed"), ignore_errors=True)
+    shutil.rmtree(
+        DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA), ignore_errors=True
+    )
     SEED_SCHEMA_PATH.unlink(missing_ok=True)
 
 

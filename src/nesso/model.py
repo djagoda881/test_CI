@@ -2,7 +2,6 @@ import pathlib
 
 import typer
 from rich import print
-from rich.prompt import Prompt
 
 from .common import DBT_PROJECT_DIR, call_shell, run_in_dbt_project
 

@@ -4,8 +4,9 @@ import shutil
 
 import mock
 from getkey import key
+
 from nesso.base_model import check_if_base_model_exists
-from nesso.common import DBT_PROJECT_DIR
+from nesso.common import BASE_MODELS_SCHEMA, DBT_PROJECT_DIR
 from nesso.model import bootstrap, bootstrap_yaml
 from nesso.source import check_if_source_exists
 from nesso.source import create as create_source
@@ -77,7 +78,7 @@ def test_model_bootstrap_yaml(
         ignore_errors=True,
     )
     shutil.rmtree(
-        DBT_PROJECT_DIR.joinpath("models", "conformed"),
+        DBT_PROJECT_DIR.joinpath("models", BASE_MODELS_SCHEMA),
         ignore_errors=True,
     )
     shutil.rmtree(
