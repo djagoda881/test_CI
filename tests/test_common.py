@@ -29,7 +29,9 @@ def test_run_in_dbt_project():
 
 def test_get_current_dbt_project():
     working_dir = os.getcwd()
-    os.chdir("/home/nesso/tests/dbt_projects/postgres")
+
+    postgres_project_dir = Path(__file__).parent.joinpath("dbt_projects", "postgres")
+    os.chdir(postgres_project_dir)
 
     project = get_current_dbt_project()
 
