@@ -33,7 +33,8 @@ test = [
   "pandas==1.5.3",
   "mock >=5.0.1, <5.1",
   "openpyxl >=3.0.10, <3.1",
-  "oyaml >= 1.0, <1.1"
+  "oyaml >= 1.0, <1.1",
+  "rich >=13.3, <13.4"
 ]
 trino = ["dbt-trino == 1.3.2"]
 all = ["nesso[test]"]
