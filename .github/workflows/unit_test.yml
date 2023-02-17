@@ -1,0 +1,38 @@
+name: Test action
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15.1
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: db
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt 
+          cd cli && pip install -e .[test] --user
+          
+      - name: Run script file 
+        run: |
+          sed -i 's/nesso_postgres/localhost/g' tests/conftest.py
+          sed -i 's/nesso_postgres/localhost/g' tests/dbt_projects/postgres/profiles.yml
+          cp -R macros/ tests/dbt_projects/postgres/
+          cd tests/dbt_projects/postgres && dbt deps 
+        shell: bash
+
+      - name: Run pytest
+        run: |
+          pytest tests/test_*.py
