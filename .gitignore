@@ -14,3 +14,4 @@ target
 .gitconfig
 .prefect
 .git-credentials
+.secret
