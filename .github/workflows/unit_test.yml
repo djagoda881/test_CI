@@ -32,8 +32,7 @@ jobs:
           
       - name: Set git cred
         run: |
-          git config --global user.name $GITHUB_USERNAME
-          git config --global user.password $GITHUB_TOKEN
+          git clone https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/dyvenia/prefect-viadot.git
         shell: bash
 
       - name: Install dependencies
