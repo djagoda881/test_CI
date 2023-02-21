@@ -9,6 +9,8 @@ jobs:
     
     env:
       PROJECT_PATH: tests/dbt_projects/postgres
+      GITHUB_USERNAME: ${GH_BOT_USERNAME}
+      GITHUB_TOKEN: ${GH_BOT_TOKEN}
 
     services:
       postgres:
@@ -22,7 +24,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
