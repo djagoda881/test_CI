@@ -9,8 +9,8 @@ jobs:
     
     env:
       PROJECT_PATH: tests/dbt_projects/postgres
-      GITHUB_USERNAME: ${secrets.GITHUB_USERNAME}
-      GITHUB_TOKEN: ${secrets.GITHUB_TOKEN}
+      GITHUB_USERNAME: ${secrets.USERNAME}
+      GITHUB_TOKEN: ${secrets.TOKEN}
 
     services:
       postgres:
