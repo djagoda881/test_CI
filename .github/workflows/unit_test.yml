@@ -9,6 +9,8 @@ jobs:
     
     env:
       PROJECT_PATH: tests/dbt_projects/postgres
+      GITHUB_USERNAME: ${{ secrets.USERNAME }}
+      GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
     services:
       postgres:
@@ -30,7 +32,7 @@ jobs:
           
       - name: Install dependencies
         run: |
-          sed -i '/prefect-viadot/d' pyproject.toml
+          echo "https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com" > ~/.git-credentials
           pip install .[test]
           
       - name: Setting up the test environment
