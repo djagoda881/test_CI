@@ -11,7 +11,7 @@ dependencies = [
   "typer[all] >=0.4.1, <0.5",
   "acryl-datahub[dbt] == 0.8.45",  # Must match DataHub server version.
   "dbt-postgres == 1.3.2",
-  "prefect-viadot @ git+https://github.com/dyvenia/prefect-viadot.git?login=$GITHUB_USERNAME&token=$GITHUB_TOKEN",
+  "prefect-viadot @ git+https://github.com/dyvenia/prefect-viadot.git",
   "oyaml >=1.0, <2.0",
   "loguru >=0.6.0, <1.0"
 ]
