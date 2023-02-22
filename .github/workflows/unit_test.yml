@@ -29,10 +29,9 @@ jobs:
         with:
           python-version: "3.10"
           
-      - name: Set up Git
-        uses: actions/setup-git@v1
+      - uses: de-vri-es/setup-git-credentials@v2
         with:
-          token: ${{ secrets.TOKEN }}
+          credentials: ${{secrets.GIT_CREDENTIALS}}
           
       - name: Install dependencies
         run: |
