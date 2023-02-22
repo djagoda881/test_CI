@@ -23,6 +23,9 @@ jobs:
     steps:
     
       - uses: actions/checkout@v3
+        with:
+            user_name: ${{ secrets.USERNAME }}
+            token: ${{ secrets.TOKEN }}
           
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
@@ -31,8 +34,6 @@ jobs:
           
       - name: Install dependencies
         run: |
-          with:
-            token: ${{ secrets.TOKEN }}
             pip install .[test]
           
       - name: Setting up the test environment
