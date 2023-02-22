@@ -31,7 +31,7 @@ jobs:
           
       - uses: de-vri-es/setup-git-credentials@v2
         with:
-          credentials: ${{secrets.GIT_CREDENTIALS}}
+          credentials: ${{ secrets.GIT_CREDENTIALS }}
           
       - name: Install dependencies
         run: |
