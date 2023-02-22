@@ -9,8 +9,6 @@ jobs:
     
     env:
       PROJECT_PATH: tests/dbt_projects/postgres
-      GITHUB_USERNAME: ${{ secrets.USERNAME }}
-      REPO: ${{ secrets.REPPO }}
 
     services:
       postgres:
@@ -26,10 +24,8 @@ jobs:
     
       - uses: actions/checkout@v3
         with:
-          persist-credentials: true
-          repository: dyvenia/prefect-viadot
           token: ${{ secrets.TOKEN }}
-          ref: main
+
           
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
