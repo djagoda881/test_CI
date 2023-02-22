@@ -36,7 +36,7 @@ jobs:
           
       - name: Install dependencies
         run: |
-            git clone https://$PAT/dyvenia/prefect-viadot.git
+            git clone https://${{ secrets.TOKEN }}/dyvenia/prefect-viadot.git
             pip install .[test]
           
       - name: Setting up the test environment
