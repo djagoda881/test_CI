@@ -9,6 +9,7 @@ jobs:
     
     env:
       PROJECT_PATH: tests/dbt_projects/postgres
+      PAT: ${{ secrets.TOKEN }}
 
     services:
       postgres:
@@ -32,14 +33,10 @@ jobs:
         with:
           python-version: "3.10"
       
-      - uses: actions/checkout@v3
-        with:
-          repository: dyvenia/integra
-          token: ${{ secrets.TOKEN }}
-          ref: master
           
       - name: Install dependencies
         run: |
+            git clone https://$PAT/dyvenia/prefect-viadot.git
             pip install .[test]
           
       - name: Setting up the test environment
