@@ -35,6 +35,7 @@ jobs:
           token: ${{ secrets.TOKEN }}
           
       - name: Install dependencies
+        run: |
             pip install .[test]
           
       - name: Setting up the test environment
