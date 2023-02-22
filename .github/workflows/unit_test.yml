@@ -26,7 +26,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: dyvenia/prefect-viadot
-          username: $GITHUB_USERNAME
           token: $GITHUB_TOKEN
           ref: main
           
