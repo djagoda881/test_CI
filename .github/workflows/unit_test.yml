@@ -23,10 +23,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          repository: dyvenia/prefect-viadot
-          token: ${{ secrets.TOKEN }}
-          ref: main
           
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
