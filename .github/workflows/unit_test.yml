@@ -21,11 +21,11 @@ jobs:
           - 5432:5432
 
     steps:
+      - uses: actions/labeler@v4
+        with:
+          repo-token: ${{ secrets.TOKEN }}
     
       - uses: actions/checkout@v3
-        with:
-            user_name: ${{ secrets.USERNAME }}
-            token: ${{ secrets.TOKEN }}
           
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
