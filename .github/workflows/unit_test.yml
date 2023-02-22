@@ -11,6 +11,8 @@ jobs:
       PROJECT_PATH: tests/dbt_projects/postgres
       GITHUB_USERNAME: ${{ secrets.USERNAME }}
       GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      SSH: ${{ secrets.SSH }}
+      REPO: ${{ secrets.REPPO }}
 
     services:
       postgres:
@@ -28,7 +30,7 @@ jobs:
         with:
           persist-credentials: true
           repository: dyvenia/prefect-viadot
-          token: $GITHUB_TOKEN
+          ssh-key: $SSH
           ref: main
           
       - name: Set up Python 3.10
