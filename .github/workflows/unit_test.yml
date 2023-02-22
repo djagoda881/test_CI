@@ -11,6 +11,7 @@ jobs:
       PROJECT_PATH: tests/dbt_projects/postgres
       GITHUB_USERNAME: ${{ secrets.USERNAME }}
       GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      EMAIL: ${{ secrets.EMAIL_DY }}
 
     services:
       postgres:
@@ -23,6 +24,15 @@ jobs:
           - 5432:5432
 
     steps:
+      - name: Set Git config
+        run: |
+          git config --global credential.helper store
+          git config --global user.email $EMAIL
+          git config --global user.name $GITHUB_USERNAME
+          git config --global core.askpass ""
+          git config --global core.sshCommand "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+          git config --global credential.helper 'store --file ~/.my-credentials'
+        
       - uses: actions/checkout@v3
         with:
           persist-credentials: true
