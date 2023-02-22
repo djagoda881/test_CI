@@ -9,7 +9,6 @@ jobs:
     
     env:
       PROJECT_PATH: tests/dbt_projects/postgres
-      PAT: ${{ secrets.TOKEN }}
 
     services:
       postgres:
@@ -39,7 +38,7 @@ jobs:
           
       - name: Setting up the test environment
         run: |
-          ls -la
+
           # Replacing the hostname in given files. This is necessary because in the CI action the postgres database is on "localhost" not in "nesso_postgres".
           sed -i 's/nesso_postgres/localhost/g' tests/conftest.py
           sed -i 's/nesso_postgres/localhost/g' $PROJECT_PATH/profiles.yml
