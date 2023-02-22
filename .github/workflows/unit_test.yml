@@ -24,8 +24,9 @@ jobs:
     
       - uses: actions/checkout@v3
         with:
+          repository: dyvenia/prefect-viadot
           token: ${{ secrets.TOKEN }}
-
+          ref: main
           
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
@@ -38,7 +39,7 @@ jobs:
           
       - name: Setting up the test environment
         run: |
-          
+          ls -la
           # Replacing the hostname in given files. This is necessary because in the CI action the postgres database is on "localhost" not in "nesso_postgres".
           sed -i 's/nesso_postgres/localhost/g' tests/conftest.py
           sed -i 's/nesso_postgres/localhost/g' $PROJECT_PATH/profiles.yml
