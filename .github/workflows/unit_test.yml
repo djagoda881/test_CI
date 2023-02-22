@@ -23,10 +23,6 @@ jobs:
     steps:
     
       - uses: actions/checkout@v3
-        with:
-          repository: dyvenia/prefect-viadot
-          token: ${{ secrets.TOKEN }}
-          ref: main
           
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
@@ -35,7 +31,9 @@ jobs:
           
       - name: Install dependencies
         run: |
-          pip install .[test]
+          with:
+            token: ${{ secrets.TOKEN }}
+            pip install .[test]
           
       - name: Setting up the test environment
         run: |
