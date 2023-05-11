@@ -27,29 +27,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.10"
-          
-      - uses: de-vri-es/setup-git-credentials@v2
-        with:
-          credentials: ${{ secrets.GIT_CREDENTIALS }}
-          
-      - name: Install dependencies
+      - name: asdsad
         run: |
-            pip install .[test]
-          
-      - name: Setting up the test environment
-        run: |
-
-          # Replacing the hostname in given files. This is necessary because in the CI action the postgres database is on "localhost" not in "nesso_postgres".
-          sed -i 's/nesso_postgres/localhost/g' tests/conftest.py
-          sed -i 's/nesso_postgres/localhost/g' $PROJECT_PATH/profiles.yml
-
-          # Copying the necessary folders to the dbt project and installing dbt deps
-          cp -R macros/ $PROJECT_PATH
-          cd $PROJECT_PATH && dbt deps
-        
-        shell: bash
-
-      - name: Run pytest
-        run: |
-          # Running all tests in a postgres project
-          cd $PROJECT_PATH && pytest ../../test_*.py
+          git branch
+      
