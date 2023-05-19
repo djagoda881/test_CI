@@ -31,3 +31,6 @@ jobs:
         run: |
           git rev-parse --abbrev-ref HEAD
       
+      - name: test2
+        run: |
+          git branch --show-current
