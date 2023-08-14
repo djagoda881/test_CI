@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# changes 0.0.1
+# changes 0.0.2
 import typer
 
 import nesso.source as source
