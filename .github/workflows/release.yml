@@ -33,7 +33,3 @@ jobs:
         with:
           repo_token: "${{ secrets.TOKEN }}"
           prerelease: false
-
-      - uses: release-drafter/release-drafter@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
