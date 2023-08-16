@@ -6,19 +6,19 @@ on:
       - "v*"
 
 jobs:
-  pre-commit-checks:
-    name: Pre-commit checks
-    runs-on: ubuntu-latest
+
+  tagged-release:
+    name: "Tagged Release"
+    runs-on: "ubuntu-latest"
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
 
       - name: Install pre-commit
         run: |
@@ -28,18 +28,6 @@ jobs:
       - name: Run pre-commit
         run: |
           pre-commit run --show-diff-on-failure --color=always --all-files
-  
-  tagged-release:
-    name: "Tagged Release"
-    runs-on: "ubuntu-latest"
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        
-      - name: "Build & test"
-        run: |
-          echo "done!"
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
