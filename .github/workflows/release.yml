@@ -29,7 +29,20 @@ jobs:
         run: |
           pre-commit run --show-diff-on-failure --color=always --all-files
 
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          repo_token: "${{ secrets.TOKEN }}"
-          prerelease: false
+          node-version: '14'
+
+      - name: Install Dependencies
+        run: npm install -g conventional-changelog-cli semantic-release @actions/github
+
+      - name: Generate Release Notes and Version
+        run: npx semantic-release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/* # Add files to attach to the release (if needed)
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
