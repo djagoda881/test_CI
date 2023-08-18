@@ -11,12 +11,6 @@ jobs:
     name: "Release"
     runs-on: "ubuntu-latest"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: branch name
-        run: echo ${{ github.ref }}
-
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN}}"
