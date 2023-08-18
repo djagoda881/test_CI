@@ -10,6 +10,8 @@ jobs:
     name: "Release"
     runs-on: "ubuntu-latest"
     steps:
+      - name: Show Branch Name
+        run: echo ${GITHUB_BASE_REF}
 
       - name: Show Branch Name
         run: echo ${GITHUB_HEAD_REF}
