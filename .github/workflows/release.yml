@@ -4,11 +4,10 @@ on:
   push:
     tags:
       - "v*"
-    branches:
-      - "ci_action_unit_tests"
 
 jobs:
   release:
+    if: ${{ github.ref == 'refs/heads/ci_action_unit_tests' }}
     name: "Release"
     runs-on: "ubuntu-latest"
     steps:
