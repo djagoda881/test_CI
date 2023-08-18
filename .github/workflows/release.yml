@@ -2,8 +2,8 @@ name: "Release"
 
 on:
   push:
-    tags:
-      - "v*"
+    branch:
+      - "ci_action_unit_tests"
 
 jobs:
   release:
