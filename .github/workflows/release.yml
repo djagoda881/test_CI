@@ -7,10 +7,12 @@ on:
 
 jobs:
   release:
-    if: ${{ github.ref == 'refs/heads/ci_action_unit_tests' }}
     name: "Release"
     runs-on: "ubuntu-latest"
     steps:
+      - name: Show Branch Name
+          run: echo "Current branch is: $(basename ${{ github.ref }})"
+      
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN}}"
