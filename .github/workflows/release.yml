@@ -6,13 +6,12 @@ on:
       - "v*"
 
 jobs:
-
   release:
+    if: ${{ github.ref == 'refs/heads/ci_action_unit_tests' }}
     name: "Release"
     runs-on: "ubuntu-latest"
-
     steps:
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          repo_token: "${{ secrets.TOKEN }}"
+          repo_token: "${{ secrets.TOKEN}}"
           prerelease: false
