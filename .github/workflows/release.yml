@@ -12,13 +12,13 @@ jobs:
     steps:
 
       - name: Show Branch Name
-        run: echo ${{ GITHUB_HEAD_REF }}
+        run: echo ${GITHUB_HEAD_REF}
       
       - name: Show Branch Name
-        run: echo ${{ GITHUB_REF }}
+        run: echo ${GITHUB_REF}
       
       - name: Show Branch Name
-        run: echo ${{ GITHUB_REF_NAME }}    
+        run: echo ${GITHUB_REF_NAME}    
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
