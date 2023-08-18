@@ -11,8 +11,17 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: Show Branch Name
-        run: echo $(git branch)
+        run: echo ${{ GITHUB_BASE_REF }}
+
+      - name: Show Branch Name
+        run: echo ${{ GITHUB_HEAD_REF }}
       
+      - name: Show Branch Name
+        run: echo ${{ GITHUB_REF }}
+      
+      - name: Show Branch Name
+        run: echo ${{ GITHUB_REF_NAME }}    
+
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN}}"
