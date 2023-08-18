@@ -3,7 +3,7 @@ name: "Release"
 on:
   push:
     branches:
-      - "main"
+      - "ci_action_unit_tests"
 
 jobs:
   release:
