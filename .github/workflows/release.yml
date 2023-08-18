@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    if: startsWith(github.ref, 'refs/heads/v')
+    if: ${{ github.ref == 'refs/heads/v0.1.31' }}
     name: "Release"
     runs-on: "ubuntu-latest"
     steps:
