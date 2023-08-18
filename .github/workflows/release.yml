@@ -3,7 +3,7 @@ name: "Release"
 on:
   push:
     branches:
-      - "ci_action_unit_tests"
+      - "main"
     tags:
       - "v*"
 
