@@ -11,7 +11,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: Show Branch Name
-          run: echo ${{ github.ref }})
+        run: echo ${{ github.ref }}
       
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
