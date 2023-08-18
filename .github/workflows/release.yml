@@ -2,6 +2,8 @@ name: "Release"
 
 on:
   push:
+    branches:
+      - "ci_action_unit_tests"
     tags:
       - "v*"
 
@@ -10,18 +12,6 @@ jobs:
     name: "Release"
     runs-on: "ubuntu-latest"
     steps:
-      - name: Show Branch Name
-        run: echo ${GITHUB_BASE_REF}
-
-      - name: Show Branch Name
-        run: echo ${GITHUB_HEAD_REF}
-      
-      - name: Show Branch Name
-        run: echo ${GITHUB_REF}
-      
-      - name: Show Branch Name
-        run: echo ${GITHUB_REF_NAME}    
-
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN}}"
