@@ -10,7 +10,7 @@ jobs:
     name: "Release"
     runs-on: "ubuntu-latest"
     outputs:
-      branch: ${{ steps.check_step.outputs.branch }}
+      output1: ${{ steps.step1.outputs.branch }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -18,12 +18,12 @@ jobs:
           fetch-depth: 0
 
       - name: Get current branch
-        id: check_step
+        id: step1
         run: |
           raw=$(git branch -r --contains ${{ github.ref }})
           branch=${raw##*/}
-          echo "{name}=branch" >> $GITHUB_OUTPUT
-          echo "Branch is $branch."
+          echo $branch >> "$GITHUB_OUTPUT"
+         
 
   job2:
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
 
     steps:
 
-      - run : echo ${{ needs.release.outputs.branch }}
+      - run : echo ${{ needs.release.outputs.output1 }}
 
       - run : echo ${{ GITHUB_OUTPUT }}
 
