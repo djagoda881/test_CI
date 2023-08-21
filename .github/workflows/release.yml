@@ -15,7 +15,7 @@ jobs:
 
       - name: Extract and Display Branch Name
         run: |
-          echo $GITHUB_BASE_REF
+          echo $GITHUB_REF_NAME
 
       - name: Extract and Display Branch Name
         run: |
