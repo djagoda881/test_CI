@@ -15,10 +15,7 @@ jobs:
 
       - name: Extract and Display Branch Name
         run: |
-          # Run the git branch --contains command and store the result in a variable
-          BRANCH_NAME=$(git branch --contains $(git log -1 --format='%H'))
-          echo $BRANCH_NAME
-
+          echo ${{ github.ref }}
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN}}"
