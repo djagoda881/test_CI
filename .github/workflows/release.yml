@@ -34,8 +34,6 @@ jobs:
 
       - run : echo ${{ needs.release.outputs.output1 }}
 
-      - run : echo ${{ GITHUB_OUTPUT }}
-
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN}}"
