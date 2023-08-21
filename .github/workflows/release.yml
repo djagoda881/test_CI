@@ -20,8 +20,8 @@ jobs:
       - name: Get current branch
         id: step1
         run: |
-          raw=$(git branch -r --contains ${{ github.ref }})
-          branch=${raw##*/}
+          raw=$(git branch -r --contains ${{ github.ref }}) &&
+          branch=${raw##*/} &&
           echo "branch=$branch" >> $GITHUB_OUTPUT
          
 
