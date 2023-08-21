@@ -12,15 +12,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
-      - name: Extract and Display Branch Name
+      - name: Get Branch
         run: |
-          echo $(git branch --contains tags/$GITHUB_REF_NAME)
-      - name: Extract and Display Branch Name
-        run: |
-          echo $GITHUB_HEAD_REF
+          raw=$(git branch -r --contains ${{ github.ref }})
+          branch=${raw/origin\/}
+          echo ::set-env name=BRANCH::$branch
+     
+      - run: echo ${{ env.BRANCH }}
+
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN}}"
