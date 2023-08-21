@@ -13,14 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Get Branch
-        run: |
-          raw=$(git branch -r --contains ${{ github.ref }})
-          branch=${raw/origin\/}
-          echo ::set-env name=BRANCH::$branch
-     
-      - run: echo ${{ env.BRANCH }}
-
+      steps:
+      - name: Echo branch
+        run: echo "${{ github.event.base_ref }}"
+   
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN}}"
