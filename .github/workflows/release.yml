@@ -3,7 +3,7 @@ name: "Release"
 on:
   push:
     tags:
-      - 'refs/tags/v*' # Match tags that start with 'v' (adjust as needed)
+      - 'v*' # Match tags that start with 'v' (adjust as needed)
 
 jobs:
   release:
