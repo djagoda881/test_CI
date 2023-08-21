@@ -2,7 +2,7 @@ name: "Release"
 
 on:
   push:
-    branches:
+    branch:
       - "ci_action_unit_tests"
 
 jobs:
@@ -13,5 +13,5 @@ jobs:
     steps:
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          repo_token: "${{ secrets.GH_BOT_TOKEN}}"
+          repo_token: "${{ secrets.TOKEN}}"
           prerelease: false
