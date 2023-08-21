@@ -28,9 +28,11 @@ jobs:
   job2:
     runs-on: ubuntu-latest
     needs: release # Wait for check step to finish
-    if: ${{ needs.release.outputs.branch == 'ci_action_unit_tests' }} # only run if branch is master
+    #if: ${{ needs.release.outputs.branch == 'ci_action_unit_tests' }} # only run if branch is master
 
     steps:
+
+      - run : echo ${{ needs.release.outputs.branch }}
       
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
