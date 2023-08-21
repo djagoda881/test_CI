@@ -1,3 +1,6 @@
+# GitHub action creating a release based on a new tag.
+# The action only runs when a new tag is pushed to the main branch.
+
 name: "Release"
 
 on:
