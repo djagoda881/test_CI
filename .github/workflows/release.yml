@@ -4,13 +4,19 @@ on:
   push:
     tags:
       - 'refs/tags/v*' # Match tags that start with 'v' (adjust as needed)
-    branches:
-      - ci_action_unit_tests
+
 jobs:
   release:
     name: "Release"
     runs-on: "ubuntu-latest"
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Display Branch Name
+        run: |
+          echo $GITHUB_REF
+
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN}}"
