@@ -12,9 +12,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
-      - name: Echo branch
-        run: echo "${{ github.event.base_ref }}"
+        with:
+          fetch-depth: 0
+
+      - name: Get current branch
+        id: check_step
+        run: |
+          raw=$(git branch -r --contains ${{ github.ref }})
+          branch=${raw##*/}
+          echo "{name}=branch" >> $GITHUB_OUTPUT
+          echo "Branch is $branch."
    
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
