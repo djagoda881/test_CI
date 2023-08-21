@@ -23,14 +23,14 @@ jobs:
           echo "{name}=branch" >> $GITHUB_OUTPUT
           echo "Branch is $branch."
 
-    job2:
-      runs-on: ubuntu-latest
-      needs: check # Wait for check step to finish
-      if: ${{ needs.check.outputs.branch == 'ci_action_unit_tests' }} # only run if branch is master
+  job2:
+    runs-on: ubuntu-latest
+    needs: check # Wait for check step to finish
+    if: ${{ needs.check.outputs.branch == 'ci_action_unit_tests' }} # only run if branch is master
 
-      steps:
-        
-        - uses: "marvinpinto/action-automatic-releases@latest"
-          with:
-            repo_token: "${{ secrets.TOKEN}}"
-            prerelease: false
+    steps:
+      
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.TOKEN}}"
+          prerelease: false
