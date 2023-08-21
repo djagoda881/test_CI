@@ -13,9 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Display Branch Name
+      - name: Extract and Display Branch Name
         run: |
-          echo $GITHUB_REF
+          # Run the git branch --contains command and store the result in a variable
+          BRANCH_NAME=$(git branch --contains $(git log -1 --format='%H'))
+          echo $BRANCH_NAME
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
