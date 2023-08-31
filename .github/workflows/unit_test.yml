@@ -1,6 +1,9 @@
 name: Test action
 
-on: [push]
+on:
+  pull_request:
+    branches:
+      - ci_action_unit_tests
 
 jobs:
   build:
