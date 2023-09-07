@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - ci_action_unit_tests
+env:
+  GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
 jobs:
   build:
@@ -15,8 +17,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.TOKEN }}
           
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
@@ -25,6 +25,7 @@ jobs:
       - name: asdsad
         run: |
           touch test.txt &&
+          git remote set-url --push origin https://djagoda881:$GITHUB_TOKEN@github.com/djagoda881/test_CI
           git commit -am "Automated report" &&
           git push
           
