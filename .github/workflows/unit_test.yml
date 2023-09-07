@@ -26,8 +26,6 @@ jobs:
       - name: asdsad
         run: |
           touch test2.txt &&
-          git config --global user.email service_account@example.com &&
-          git config --global user.name Service Account &&
           git add test2.txt &&
           git commit -m "Automated report" &&
           git push
