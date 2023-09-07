@@ -34,8 +34,4 @@ jobs:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
           EMAIL: ${{ secrets.EMAIL_ACCOUNT }}
           USERNAME: ${{ secrets.USERNAME }}
-          
-      
-      - name: test2
-        run: |
-          git branch --show-current
+
