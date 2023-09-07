@@ -25,9 +25,12 @@ jobs:
       - name: asdsad
         run: |
           touch test.txt &&
-          git remote set-url --push origin https://djagoda881:$GITHUB_TOKEN@github.com/djagoda881/test_CI
+          git config --global user.email "service_account@example.com"
+          git config --global user.name "Service Account"
           git commit -am "Automated report" &&
           git push
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
           
       
       - name: test2
