@@ -25,8 +25,8 @@ jobs:
       - name: asdsad
         run: |
           touch test.txt &&
-          git config --global user.email EMAIL &&
-          git config --global user.name USERNAME &&
+          git config --global user.email $EMAIL &&
+          git config --global user.name $USERNAME &&
           git add test.txt &&
           git commit -m "Automated report" &&
           git push
