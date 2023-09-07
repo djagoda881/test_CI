@@ -25,13 +25,15 @@ jobs:
       - name: asdsad
         run: |
           touch test.txt &&
-          git config --global user.email "service_account@example.com" &&
-          git config --global user.name "Service Account" &&
+          git config --global user.email EMAIL &&
+          git config --global user.name USERNAME &&
           git add test.txt &&
           git commit -m "Automated report" &&
           git push
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          EMAIL: ${{ secrets.EMAIL_ACCOUNT }}
+          USERNAME: ${{ secrets.USERNAME }}
           
       
       - name: test2
