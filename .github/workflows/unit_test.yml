@@ -26,6 +26,8 @@ jobs:
       - name: git setup
         run: |
           git checkout -b release_branch
+          git config --global user.email "serviceaccount@example.com"
+          git config --global user.name "serviceaccount"
         shell: bash
         
       - name: step1
