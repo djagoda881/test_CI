@@ -33,4 +33,8 @@ jobs:
         run: touch step3.txt
 
       - name: pr
-        run: git status
+        run: |
+          git add -A
+          git commit -m"test"
+          git log
+        shell: bash
