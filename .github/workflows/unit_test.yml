@@ -24,12 +24,7 @@ jobs:
           python-version: "3.10"
       - name: asdsad
         run: |
-          rm test2.txt &&
-          git config --global user.email service_account@example.com &&
-          git config --global user.name Service Account &&
-          git add test2.txt &&
-          git commit -m "Automated report" &&
-          git push
+          echo $GITHUB_REF
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 
