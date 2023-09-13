@@ -22,6 +22,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.10"
+
+      - name: git setup
+        run: |
+          git checkout -b release_branch
       
       - name: step1
         run: touch step1.txt
@@ -32,9 +36,12 @@ jobs:
       - name: step3
         run: touch step3.txt
 
-      - name: pr
+      - name: commit
         run: |
           git add -A
-          gh pr create -B base_branch -H ci_action_unit_tests --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
+          git branch
+          git commit -m"test"
+      - name: pr
+          gh pr create -B release_branch -H ci_action_unit_tests --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
