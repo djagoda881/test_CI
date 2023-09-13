@@ -23,12 +23,6 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: git setup
-        run: |
-          git checkout -b release_branch
-          git config --global user.email "serviceaccount@example.com"
-          git config --global user.name "serviceaccount"
-        shell: bash
         
       - name: step1
         run: touch step1.txt
@@ -41,13 +35,11 @@ jobs:
 
       - name: commit
         run: |
+          git config --global user.email "serviceaccount@example.com"
+          git config --global user.name "serviceaccount"
           git add -A
           git branch
           git commit -m"test"
-        shell: bash
-      
-      - name: pr
-        run:
           gh pr create -H ci_action_unit_tests --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
