@@ -43,6 +43,6 @@ jobs:
           git branch
           git commit -m"test"
           git push --set-upstream origin post_release_branch
-          gh pr create -B post_release_branch -H ci_action_unit_tests --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
+          gh pr create -B ci_action_unit_tests -H post_release_branch --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
