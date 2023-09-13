@@ -35,6 +35,6 @@ jobs:
       - name: pr
         run: |
           git add -A
-          git commit -m"test"
-          git log
-        shell: bash
+          gh pr create -B base_branch -H ci_action_unit_tests --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
