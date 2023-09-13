@@ -35,7 +35,7 @@ jobs:
         run: touch step2.txt
       
       - name: step3
-        run: touch step3.txt
+        run: touch step4.txt
 
       - name: commit
         run: |
