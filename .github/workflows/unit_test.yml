@@ -26,7 +26,8 @@ jobs:
       - name: git setup
         run: |
           git checkout -b release_branch
-      
+        shell: bash
+        
       - name: step1
         run: touch step1.txt
 
@@ -41,6 +42,8 @@ jobs:
           git add -A
           git branch
           git commit -m"test"
+        shell: bash
+      
       - name: pr
           gh pr create -B release_branch -H ci_action_unit_tests --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
         env:
