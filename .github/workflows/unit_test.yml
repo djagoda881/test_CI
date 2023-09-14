@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: "3.10"
 
-      - uses: fregante/setup-git-user@v1
+      - uses: fregante/setup-git-user@v2
 
       - name: test
         run: git checkout -b post_release_branch
