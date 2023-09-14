@@ -9,9 +9,7 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
-    env:
-      PROJECT_PATH: tests/dbt_projects/postgres
+
 
     steps:
       - uses: actions/checkout@v3
