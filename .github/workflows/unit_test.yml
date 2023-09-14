@@ -23,11 +23,11 @@ jobs:
         with:
           python-version: "3.10"
 
+      - uses: fregante/setup-git-user@v1
+
       - name: test
-        run: |
-          git config --global user.email "serviceaccount@example.com"
-          git config --global user.name "serviceaccount"
-          git checkout -b post_release_branch
+        run: git checkout -b post_release_branch
+        
       - name: step1
         run: touch step1.txt
 
