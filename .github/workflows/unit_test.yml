@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - ci_action_unit_tests
-env:
-  GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
 jobs:
   build:
