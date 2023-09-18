@@ -13,39 +13,10 @@ jobs:
     name: "Branch check"
     runs-on: "ubuntu-latest"
 
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/ci_action_unit_tests'
 
     steps:
       - uses: actions/checkout@v4
-      - uses: fregante/setup-git-user@v2
-      
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.10"
-
-
-      - name: test
-        run: git checkout -b release_branch
-        
-      - name: step1
-        run: touch step1.txt
-
-      - name: step2
-        run: touch step2.txt
-      
-      - name: step3
-        run: touch step4.txt
-
-      - name: commit
-        run: |
-          git add -A
-          git branch
-          git commit -m"test"
-          git push --set-upstream origin release_branch
-          gh pr create -B ci_action_unit_tests -H release_branch --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
   
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
