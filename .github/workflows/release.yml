@@ -9,8 +9,8 @@ on:
       - 'v*' # Match tags that start with 'v' 
 
 jobs:
-  branch_check:
-    name: "Branch check"
+  release:
+    name: "Release"
     runs-on: "ubuntu-latest"
 
     if: github.ref == 'refs/heads/ci_action_unit_tests'
