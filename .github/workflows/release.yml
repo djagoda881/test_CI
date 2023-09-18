@@ -13,11 +13,11 @@ jobs:
     name: "Release"
     runs-on: "ubuntu-latest"
 
-    if: github.ref == 'refs/heads/ci_action_unit_tests'
+    #if: github.ref == 'refs/heads/ci_action_unit_tests'
 
     steps:
       - uses: actions/checkout@v4
-  
+      - run: echo ${{ github.ref }}
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN}}"
