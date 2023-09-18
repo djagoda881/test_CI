@@ -12,42 +12,8 @@ jobs:
   branch_check:
     name: "Branch check"
     runs-on: "ubuntu-latest"
-    outputs:
-      output1: ${{ steps.step1.outputs.branch }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
-      # Finds the branch on which the tag was created, 
-      # saves it to a variable and returns as the result of the job "branch_check"
-      - name: Get current branch
-        id: step1
-        run: |
-          raw=$(git branch -r --contains ${{ github.ref }}) &&
-          branch=${raw##*/} &&
-          echo "branch=$branch" >> $GITHUB_OUTPUT
-         
-
-  release:
-    runs-on: ubuntu-latest
-    needs: branch_check # Wait for branch_check step to finish
-    # only run 'release' job if branch is main
-
-    env:
-      PROJECT_PATH: tests/dbt_projects/postgres
-
-    services:
-      postgres:
-        image: postgres:15.1
-        env:
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: db
-        ports:
-          - 5432:5432
-    if: ${{ needs.branch_check.outputs.output1 == 'ci_action_unit_tests' }} 
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v4
