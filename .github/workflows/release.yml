@@ -6,19 +6,13 @@ name: "Release"
 on:
   push:
     tags:
-      - 'v*' # Match tags that start with 'v' 
+      - "v*.*.*" # Match tags that start with 'v'
 
 jobs:
   release:
-    name: "Release"
-    runs-on: "ubuntu-latest"
-
-    #if: github.ref == 'refs/heads/ci_action_unit_tests'
-
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: echo ${{ github.ref }}
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          repo_token: "${{ secrets.TOKEN}}"
+          repo_token: "${{ secrets.TOKEN }}"
           prerelease: false
