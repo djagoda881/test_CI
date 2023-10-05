@@ -24,16 +24,16 @@ jobs:
         run: git checkout -b post_release_branch
         
       - name: step1
-        run: touch step33.txt
+        run: touch stepxd.txt
 
       - name: step2
-        run: touch step45.txt
+        run: touch stepx2.txt
 
       - name: commit
         run: |
-          git add step33.txt
+          git add stepxd.txt
           git commit -m"test 1"
-          git add step45.txt
+          git add stepx2.txt
           git commit -m"test 2"
           git push --set-upstream origin post_release_branch --force
           gh pr create -B ci_action_unit_tests -H post_release_branch --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
