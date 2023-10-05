@@ -24,10 +24,10 @@ jobs:
         run: git checkout -b post_release_branch
         
       - name: step1
-        run: touch step222221.txt
+        run: touch step33.txt
 
       - name: step2
-        run: touch step444441.txt
+        run: touch step45.txt
 
       - name: commit
         run: |
