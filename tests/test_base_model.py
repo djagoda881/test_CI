@@ -1,5 +1,5 @@
 import builtins
-import shutil
+
 
 import mock
 from getkey import key
