@@ -19,7 +19,7 @@ jobs:
           python-version: "3.10"
 
       - name: Setting up the environment
-        run: pip install .[test]
+        run: pip install tomlkit
 
       - name: Setting up git environment
         run: git checkout -b post_release_branch
