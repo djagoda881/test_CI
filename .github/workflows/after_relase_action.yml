@@ -1,0 +1,45 @@
+name: "Post Release Updates"
+
+on:
+  push:
+    branches:
+      - ci_action_unit_tests
+
+jobs:
+  post_release_updates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: fregante/setup-git-user@v2
+
+      - name: Setting up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Setting up the environment
+        run: pip install .[test]
+
+      - name: Setting up git environment
+        run: git checkout -b post_release_branch
+
+      - name: Updating version in pyproject.toml
+        run: python .github/scripts/update_pyproject_version.py
+
+      - name: Creating PR
+        run: |
+          git add pyproject.toml \
+          src/nesso_cli/models/templates/packages.yml &&
+          git commit -m"🚀 Updated files after release"
+
+          DIFF=$(git log main..post_release_branch --oneline)
+          if [ -n "$DIFF" ]; then
+            git push --set-upstream origin post_release_branch --force &&
+            gh pr create -B main -H post_release_branch --title 'Post release file updates' --body 'Created by Github action' &&
+            gh pr merge --admin --squash -t "🚀 Updated files after release"
+          else
+            echo "No changes to commit between post_release_branch and main"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN}}
