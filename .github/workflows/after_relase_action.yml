@@ -31,8 +31,7 @@ jobs:
 
       - name: Creating PR
         run: |
-          git add pyproject.toml \
-          src/nesso_cli/models/templates/packages.yml &&
+          git add pyproject.toml  &&
           git commit -m"🚀 Updated files after release"
 
           DIFF=$(git log main..post_release_branch --oneline)
