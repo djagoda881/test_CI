@@ -9,6 +9,47 @@ on:
       - "v*.*.*" # Match tags that start with 'v'
 
 jobs:
+  post_release_updates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: fregante/setup-git-user@v2
+
+      - name: Setting up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Setting up the environment
+        run: pip install tomlkit
+
+      - name: Setting up git environment
+        run: git checkout -b post_release_branch
+
+      - name: Updating version in pyproject.toml
+        run: python .github/scripts/update_pyproject_version.py
+
+      - name: Commit changes
+        run: |
+          git add pyproject.toml
+          git commit -m"🚀 Updated files after release"
+
+      - name: Push changes
+        run: |
+          DIFF=$(git log ci_action_unit_tests..post_release_branch --oneline)
+          if [ -n "$DIFF" ]; then
+            git push --set-upstream origin post_release_branch --force
+            gh pr create -B ci_action_unit_tests -H post_release_branch --title 'Post release file updates' --body 'Created by Github action' &&
+            gh pr merge --admin --squash -t "🚀 Updated files after release"
+          else
+            echo "No changes to commit between post_release_branch and main"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN}}
+
   release:
     runs-on: ubuntu-latest
     steps:
