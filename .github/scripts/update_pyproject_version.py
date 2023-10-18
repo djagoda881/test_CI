@@ -18,7 +18,6 @@ def update_nesso_cli_pyproject_version(path: Union[str, Path]) -> None:
         ["git", "describe", "--tags", "--abbrev=0"], universal_newlines=True
     )
     tag = get_tag_command.strip()
-    breakpoint()
     if tag.startswith("v"):
         tag = tag[1:]
 
