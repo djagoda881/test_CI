@@ -38,7 +38,7 @@ jobs:
         run: |
           git branch
           git push --set-upstream origin post_release_branch --force
-          DIFF=$(git log main..post_release_branch --oneline)
+          DIFF=$(git log post_release_branch..main --oneline)
           if [ -n "$DIFF" ]; then
             gh pr create -B main -H post_release_branch --title 'Post release file updates' --body 'Created by Github action' &&
             gh pr merge --admin --squash -t "🚀 Updated files after release"
