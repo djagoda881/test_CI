@@ -36,7 +36,7 @@ jobs:
 
       - name: Push changes
         run: |
-          git branch
+          git log
           git push --set-upstream origin post_release_branch --force
           DIFF=$(git log post_release_branch..main --oneline)
           if [ -n "$DIFF" ]; then
