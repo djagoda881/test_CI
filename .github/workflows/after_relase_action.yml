@@ -36,13 +36,13 @@ jobs:
 
       - name: Push changes
         run: |
+          git push --set-upstream origin post_release_branch --force
           DIFF=$(git log main..post_release_branch --oneline)
           if [ -n "$DIFF" ]; then
-          git push --set-upstream origin post_release_branch --force &&
-          gh pr create -B main -H post_release_branch --title 'Post release file updates' --body 'Created by Github action' &&
-          gh pr merge --admin --squash -t "🚀 Updated files after release"
+            gh pr create -B main -H post_release_branch --title 'Post release file updates' --body 'Created by Github action' &&
+            gh pr merge --admin --squash -t "🚀 Updated files after release"
           else
-          echo "No changes to commit between post_release_branch and main"
+            echo "No changes to commit between post_release_branch and main"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
