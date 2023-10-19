@@ -7,7 +7,8 @@ import oyaml as yaml
 
 BASE_MODELS_SCHEMA = "conformed"
 
-
+# fds gdghsgshdg
+# zdfsdfsd fsdfsdfsdfsdf
 def call_shell(command: str) -> str:
     result = subprocess.check_output(command, shell=True).decode("utf-8")
     return result
