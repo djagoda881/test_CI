@@ -36,6 +36,7 @@ jobs:
         run: |
           git add pyproject.toml
           git commit -m"🚀 Updated files after release"
+          1 = 0
 
       - name: create PR changes
         run: |
