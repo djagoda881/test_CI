@@ -9,10 +9,12 @@ from .common import DBT_PROJECT_DIR, call_shell, run_in_dbt_project
 
 app = typer.Typer()
 
+# fdfsfsdfdsw
+# dsfsfsda f
 
 class SourceTableExistsError(Exception):
     pass
-
+# asfdsg dasD 
 
 def check_if_source_exists(source: str) -> bool:
     source_path = DBT_PROJECT_DIR.joinpath("models", "sources", source, source + ".yml")
