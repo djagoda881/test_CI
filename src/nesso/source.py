@@ -9,6 +9,8 @@ from .common import DBT_PROJECT_DIR, call_shell, run_in_dbt_project
 
 app = typer.Typer()
 
+# fdfsfsdfdsw
+# dsfsfsda f
 
 class SourceTableExistsError(Exception):
     pass
