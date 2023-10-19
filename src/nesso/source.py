@@ -14,7 +14,7 @@ app = typer.Typer()
 
 class SourceTableExistsError(Exception):
     pass
-
+# asfdsg dasD 
 
 def check_if_source_exists(source: str) -> bool:
     source_path = DBT_PROJECT_DIR.joinpath("models", "sources", source, source + ".yml")
