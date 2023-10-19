@@ -7,11 +7,12 @@ import oyaml as yaml
 
 BASE_MODELS_SCHEMA = "conformed"
 
-
+# fds gdghsgshdg
+# zdfsdfsd fsdfsdfsdfsdf
 def call_shell(command: str) -> str:
     result = subprocess.check_output(command, shell=True).decode("utf-8")
     return result
-
+#zd dsffsdfsdfsdfsdfsd
 
 def get_current_dbt_project_path():
     cwd = os.getcwd()
