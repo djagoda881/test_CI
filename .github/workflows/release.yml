@@ -50,10 +50,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN}}
 
-  # release:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: "marvinpinto/action-automatic-releases@latest"
-  #       with:
-  #         repo_token: "${{ secrets.TOKEN }}"
-  #         prerelease: false
+  release:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.TOKEN }}"
+          prerelease: false
+    needs: post_release_updates
