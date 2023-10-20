@@ -39,10 +39,14 @@ jobs:
 
       - name: create PR changes
         run: |
-          git push --set-upstream origin post_release_branch --force
-          gh pr create -B ci_action_unit_tests -H post_release_branch --title 'Post release file updates' --body 'Created by Github action'
-          echo "No changes to commit between bump_files_version_branch and main"
-
+          DIFF=$(git log ci_action_unit_tests..post_release_branch --oneline)
+          if [ -n "$DIFF" ]; then
+            git push --set-upstream origin post_release_branch --force
+            gh pr create -B ci_action_unit_tests -H post_release_branch --title 'Post release file updates' --body 'Created by Github action'
+            echo "No changes to commit between bump_files_version_branch and main"
+          else
+            echo "No changes to commit between post_release_branch and main"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
 
