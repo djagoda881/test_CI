@@ -57,7 +57,6 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    if: ${{ always() }}
     steps:
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
