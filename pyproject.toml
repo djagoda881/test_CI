@@ -2,7 +2,7 @@
 name = "nesso"
 description = "A CLI tool for managing the nesso data platform."
 readme = "README.md"
-version = "0.5.18"
+version = "0.5.21"
 authors = [{ name="Michał Zawadzki", email="mzawadzki@dyvenia.com" }]
 classifiers = ["Private :: Do Not Upload"]
 keywords = ["cli", "dbt", "prefect", "datahub", "data"]
