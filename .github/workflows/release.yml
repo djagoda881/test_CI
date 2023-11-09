@@ -28,7 +28,9 @@ jobs:
         run: pip install tomlkit
 
       - name: Setting up git environment
-        run: git checkout -b post_release_branch
+        run: |
+          git branch
+          git checkout -b post_release_branch
 
       - name: Updating version in pyproject.toml
         run: python .github/scripts/update_pyproject_version.py
