@@ -41,7 +41,7 @@ jobs:
 
       - name: create PR changes
         run: |
-          git checkout main
+          git checkout ci_action_unit_tests
           git checkout post_release_branch
           DIFF=$(git log ci_action_unit_tests..post_release_branch --oneline)
           if [ -n "$DIFF" ]; then
