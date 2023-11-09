@@ -38,10 +38,16 @@ jobs:
           git add pyproject.toml
           git commit -m"🚀 Updated files after release"
 
+      - uses: actions/checkout@v4
+        with:
+          ref: ci_action_unit_tests
+
+      - uses: actions/checkout@v4
+        with:
+          ref: post_release_branch
+          
       - name: create PR changes
         run: |
-          git checkout ci_action_unit_tests
-          git checkout post_release_branch
           DIFF=$(git log ci_action_unit_tests..post_release_branch)
           if [ -n "$DIFF" ]; then
             git push --set-upstream origin post_release_branch --force
