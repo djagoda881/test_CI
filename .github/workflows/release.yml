@@ -41,6 +41,10 @@ jobs:
 
       - name: create PR changes
         run: |
+          git branch
+          git checkout ci_action_unit_tests
+          git branch
+          git checkout bump_files_version_branch
           DIFF=$(git log ci_action_unit_tests..bump_files_version_branch)
           if [ -n "$DIFF" ]; then
             git push --set-upstream origin post_release_branch --force
