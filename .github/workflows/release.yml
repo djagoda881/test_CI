@@ -27,10 +27,11 @@ jobs:
       - name: Setting up the environment
         run: pip install tomlkit
 
-      - name: Setting up git environment
-        run: |
-          git branch
-          git checkout -b post_release_branch
+      - uses: peterjgrainger/action-create-branch@v2.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: 'post_release_branch'
 
       - name: Updating version in pyproject.toml
         run: python .github/scripts/update_pyproject_version.py
@@ -58,7 +59,7 @@ jobs:
         run: |
           gh pr merge --admin --squash -t "🚀 Updated files after release"
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
 
   release:
     runs-on: ubuntu-latest
