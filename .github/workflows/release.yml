@@ -41,6 +41,14 @@ jobs:
         with:
           branch: 'post_release_branch'
 
+      - uses: actions/checkout@v4
+        with:
+          ref: post_release_branch
+
+      - name: Commit changes2
+        run: |
+          git branch 
+
       - name: Updating version in pyproject.toml
         run: python .github/scripts/update_pyproject_version.py
 
