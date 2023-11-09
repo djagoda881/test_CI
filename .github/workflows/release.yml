@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          fetch-tags: True
+          ref: ci_action_unit_tests
           
       - uses: fregante/setup-git-user@v2
 
@@ -41,7 +41,7 @@ jobs:
 
       - name: create PR changes
         run: |
-          DIFF=$(git diff ci_action_unit_tests..post_release_branch)
+          DIFF=$(git log ci_action_unit_tests..bump_files_version_branch)
           if [ -n "$DIFF" ]; then
             git push --set-upstream origin post_release_branch --force
             gh pr create -B ci_action_unit_tests -H post_release_branch --title 'Post release file updates' --body 'Created by Github action'
