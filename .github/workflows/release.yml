@@ -26,6 +26,14 @@ jobs:
 
       - name: Setting up the environment
         run: pip install tomlkit
+        
+      - uses: actions/checkout@v4
+        with:
+          ref: ci_action_unit_tests
+
+      - name: Commit changes
+        run: |
+          git branch 
 
       - uses: peterjgrainger/action-create-branch@v2.2.0
         env:
@@ -59,7 +67,7 @@ jobs:
         run: |
           gh pr merge --admin --squash -t "🚀 Updated files after release"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.TOKEN}}
 
   release:
     runs-on: ubuntu-latest
