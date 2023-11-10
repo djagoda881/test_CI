@@ -36,8 +36,18 @@ jobs:
       - name: Setting a branch
         run: git checkout ci_action_unit_tests && git checkout -b post_release_branch
 
+      - name: Get latest tag
+        id: get_latest_tag
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            latest_tag=$(git describe --tags --abbrev=0)
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            latest_tag="${{ github.event.inputs.tag }}"
+          fi
+        shell: bash
+        
       - name: Updating version in pyproject.toml
-        run: python .github/scripts/update_pyproject_version.py
+        run: python .github/scripts/update_pyproject_version.py --tag "${{ steps.get_latest_tag.outputs.latest_tag }}"
 
       - name: Commit changes
         run: |
