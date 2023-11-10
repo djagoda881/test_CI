@@ -13,8 +13,6 @@ on:
         description: Tag for automatic release
         required: true
 
-  x
-
 jobs:
   release:
     runs-on: ubuntu-latest
