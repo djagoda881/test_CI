@@ -1,8 +1,8 @@
-import subprocess
 from pathlib import Path
 from typing import Union
 
 import tomlkit
+import argparse
 
 PYPROJECT_PATH = Path(__file__).parent.parent.parent.joinpath("pyproject.toml")
 
@@ -14,10 +14,11 @@ def update_nesso_cli_pyproject_version(path: Union[str, Path]) -> None:
     Args:
         path (Union[str, Path]): Path to the YAML file.
     """
-    get_tag_command = subprocess.check_output(
-        ["git", "describe", "--tags", "--abbrev=0"], universal_newlines=True
-    )
-    tag = get_tag_command.strip()
+    parser = argparse.ArgumentParser(description="Update pyproject.toml version.")
+    parser.add_argument("--tag", required=True, help="Specify the version tag")
+
+    args = vars(parser.parse_args())
+    tag = args["tag"]
     if tag.startswith("v"):
         tag = tag[1:]
 
