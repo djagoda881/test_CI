@@ -7,6 +7,12 @@ on:
   push:
     tags:
       - "v*.*.*" # Match tags that start with 'v'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag for automatic release
+        required: true
+
 
 jobs:
   post_release_updates:
@@ -29,7 +35,6 @@ jobs:
       
       - name: Setting a branch
         run: git checkout ci_action_unit_tests && git checkout -b post_release_branch
-
 
       - name: Updating version in pyproject.toml
         run: python .github/scripts/update_pyproject_version.py
@@ -64,5 +69,6 @@ jobs:
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN }}"
+          automatic_release_tag: "${{ github.event.inputs.tag || 'latest' }}"
           prerelease: false
     needs: post_release_updates
