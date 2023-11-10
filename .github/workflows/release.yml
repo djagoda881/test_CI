@@ -41,6 +41,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "push" ]; then
             latest_tag=$(git describe --tags --abbrev=0)
+            echo "Latest tag: $latest_tag"
           elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             latest_tag="${{ github.event.inputs.tag }}"
           fi
