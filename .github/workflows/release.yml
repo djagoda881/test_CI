@@ -8,11 +8,8 @@ on:
     tags:
       - "v*.*.*" # Match tags that start with 'v'
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Tag for automatic release
-        required: true
-z
+
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -33,7 +30,7 @@ jobs:
         run: pip install tomlkit
       
       - name: Setting a branch
-        run: git checkout ci_action_unit_tests && git checkout -b post_release_branch
+        run: git checkout mainxyz && git checkout -b post_release_branch
 
       - name: Get latest tag
         id: var
