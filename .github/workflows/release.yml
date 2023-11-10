@@ -42,7 +42,7 @@ jobs:
       - name: Commit changes
         run: |
           git add pyproject.toml
-          git commit -m"🚀 Updated files after release"
+          git commit -m"🚀 Updated files after release" || echo "No changes to commit"
 
       - name: create PR changes
         run: |
