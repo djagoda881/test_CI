@@ -12,7 +12,7 @@ on:
       tag:
         description: Tag for automatic release
         required: true
-
+z
 jobs:
   release:
     runs-on: ubuntu-latest
