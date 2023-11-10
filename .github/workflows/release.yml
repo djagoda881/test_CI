@@ -30,16 +30,12 @@ jobs:
         run: pip install tomlkit
       
       - name: Setting a branch
-        run: git checkout mainxyz && git checkout -b post_release_branch
+        run: git checkout ci_action_unit_tests && git checkout -b post_release_branch
 
       - name: Get latest tag
         id: var
         run: |
-          if [ "${{ github.event_name }}" == "push" ]; then
-            latest_tag=$(git describe --tags --abbrev=0)
-          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            latest_tag="${{ github.event.inputs.tag }}"
-          fi
+          latest_tag=$(git describe --tags --abbrev=0)
           echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
         shell: bash
         
