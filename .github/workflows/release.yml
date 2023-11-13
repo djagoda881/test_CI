@@ -68,8 +68,12 @@ jobs:
           gh pr merge --admin --squash -t "🚀 Updated files after release"
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN}}
+      
+      - uses: actions/checkout@v4
+        with:
+          ref: "${{ github.event.inputs.tag }}"
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.TOKEN }}"
-          automatic_release_tag: ${{ steps.var.outputs.latest_tag }}
+          automatic_release_tag: "${{ steps.var.outputs.latest_tag }}"
