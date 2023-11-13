@@ -31,7 +31,7 @@ jobs:
         run: pip install tomlkit
       
       - name: Setting a branch
-        run: git checkout ci_action_unit_tests && git checkout -b post_release_branch
+        run: git checkout ci_action_unit_tests1 && git checkout -b post_release_branch
 
       - name: Get latest tag
         id: var
