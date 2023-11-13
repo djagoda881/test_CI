@@ -42,6 +42,7 @@ jobs:
             latest_tag="${{ github.event.inputs.tag }}"
           fi
           echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+          echo $latest_tag
         shell: bash
         
       - name: Updating version in pyproject.toml
@@ -70,10 +71,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN}}
       
       - name: Setting up the environment
-        run: git checkout ${{ github.event.inputs.latest_tag }}
+        run: git checkout "${{ github.event.inputs.latest_tag }}"
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          automatic_release_tag: ${{ github.event.inputs.latest_tag }}
+          automatic_release_tag: "${{ github.event.inputs.latest_tag }}"
           repo_token: "${{ secrets.TOKEN }}"
           prerelease: false
