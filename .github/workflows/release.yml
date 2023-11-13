@@ -77,3 +77,4 @@ jobs:
         with:
           repo_token: "${{ secrets.TOKEN }}"
           automatic_release_tag: "${{ steps.var.outputs.latest_tag }}"
+          prerelease: false
