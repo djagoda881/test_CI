@@ -69,7 +69,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN}}
       
-      
+      - uses: actions/checkout@v4
+        with:
+          ref: "${{ github.event.inputs.latest_tag }}"
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
