@@ -74,5 +74,6 @@ jobs:
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
+          automatic_release_tag: ${{ github.event.inputs.latest_tag }}
           repo_token: "${{ secrets.TOKEN }}"
           prerelease: false
